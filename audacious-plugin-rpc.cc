@@ -1,4 +1,6 @@
+#include <chrono>
 #include <iostream>
+#include <stdint.h>
 #include <string.h>
 
 #include <libaudcore/drct.h>
@@ -82,6 +84,16 @@ void title_changed() {
     if (title.empty()) title = "[unknown]";
     if (artist.empty()) artist = "[unknown]";
     artist = "by " + artist;
+
+    if (!paused) {
+        int64_t start = aud_drct_get_time() / 1000;
+        const auto clock = std::chrono::system_clock::now();
+        const int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(clock.time_since_epoch()).count();
+        const int64_t elapsed = now_s - start;
+        presence.startTimestamp = elapsed;
+    } else {
+        presence.startTimestamp = 0;
+    }
 
     presence.details = title.c_str();
     presence.state = artist.c_str();
