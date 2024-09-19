@@ -62,42 +62,33 @@ void init_presence() {
     update_presence();
 }
 
+void clear_discord() {
+    Discord_ClearPresence();
+}
+
 void cleanup_discord() {
     Discord_ClearPresence();
     Discord_Shutdown();
 }
 
 void title_changed() {
-    if (!aud_drct_get_ready()) {
+    if (!aud_drct_get_playing() || !aud_drct_get_ready()) {
+        clear_discord();
         return;
     }
 
-    if (aud_drct_get_playing()) {
-        bool paused = aud_drct_get_paused();
-        Tuple tuple = aud_drct_get_tuple();
-        String artist = tuple.get_str(Tuple::Artist);
-        std::string title(tuple.get_str(Tuple::Title));
+    const bool paused = aud_drct_get_paused();
+    const Tuple tuple = aud_drct_get_tuple();
 
-        if (artist) {
-            fullTitle = (std::string(artist) + " - " + title).substr(0, 127);
-        } else {
-            fullTitle = title.substr(0, 127);
-        }
+    std::string title(tuple.get_str(Tuple::Title));
+    std::string artist(tuple.get_str(Tuple::Artist));
+    if (title.empty()) title = "[unknown]";
+    if (artist.empty()) artist = "[unknown]";
+    artist = "by " + artist;
 
-        playingStatus = paused ? "Paused" : "Listening";
-
-        presence.details = fullTitle.c_str();
-        presence.smallImageKey = paused ? "pause" : "play";
-    } else {
-        playingStatus = "Stopped";
-        presence.state = "Stopped";
-        presence.smallImageKey = "stop";
-    }
-
-    std::string extraText(aud_get_str("audacious-plugin-rpc", SETTING_EXTRA_TEXT));
-    playingStatus = (playingStatus + " " + extraText).substr(0, 127);
-
-    presence.state = playingStatus.c_str();
+    presence.details = title.c_str();
+    presence.state = artist.c_str();
+    presence.smallImageKey = paused ? "pause" : "play";
     update_presence();
 }
 
