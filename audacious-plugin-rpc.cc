@@ -55,10 +55,7 @@ void update_presence() {
 
 void init_presence() {
     memset(&presence, 0, sizeof(presence));
-    presence.state = "Initialized";
-    presence.details = "Waiting...";
     presence.largeImageKey = "logo";
-    presence.smallImageKey = "stop";
     update_presence();
 }
 
