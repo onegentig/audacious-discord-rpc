@@ -1,21 +1,45 @@
 # audacious-plugin-rpc
-A Discord Rich Presence plugin for the Audacious music player!
 
-# Usage
-1. Download the current release from the [releases page](https://github.com/darktohka/audacious-plugin-rpc/releases).
-2. Extract `libaudacious-plugin-rpc.so` into the folder `/usr/lib/audacious/General/`.
-3. Open Audacious, go to Settings > Plugins and enable the `Discord RPC` plugin.
+I just didn’t like the style as much, so I made a fork. I made the artist
+and track title appear separately + added time elapsed.
 
-# Screenshots
-![Screenshot 1](https://i.imgur.com/fmSBkpt.png)
-![Screenshot 2](https://i.imgur.com/INHK64d.png)
+<div align="center">
+     <img
+          src=".github/img/popout.png"
+          alt="User popout" />
+</div>
 
-# Compilation
-1. Clone the repository.
-2. Compile and install the plugin:
-```
+The changes without this `README.md` (if someone wanted to make a PR or smth) is in branch
+[`refactor/style`](https://github.com/onegentig/audacious-discord-rpc/tree/refactor/style).
+
+Don’t @ me about a missing licence,
+the original repo doesn’t have one either. \
+If you are the original author pls add one thx.
+
+**Before:**
+
+<img
+     src=".github/img/before.png"
+     alt="User popout"
+     align="center"
+     width="70%" />
+
+**After:**
+
+<img
+     src=".github/img/after.png"
+     alt="User popout"
+     align="center"
+     width="70%" />
+
+## Installation
+
+```sh
+git clone git@github.com:onegentig/audacious-discord-rpc.git
+cd audacious-discord-rpc
 mkdir build
 cd build
 cmake ..
-make install
+rm _deps/discord-rpc-src/.clang-format
+sudo make install
 ```
