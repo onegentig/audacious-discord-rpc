@@ -1,7 +1,7 @@
-# audacious-plugin-rpc
+# Audacious Discord RPC
 
-I just didn’t like the style as much, so I made a fork. I made the artist
-and track title appear separately + added time elapsed.
+Minor modernisation fork of [`darktohka/audacious-plugin-rpc`](https://github.com/darktohka/audacious-plugin-rpc)
+with the artist and track displayed separately and a time elapsed counter.
 
 <div align="center">
      <img
@@ -9,11 +9,11 @@ and track title appear separately + added time elapsed.
           alt="User popout" />
 </div>
 
-The changes without this `README.md` (if someone wanted to make a PR or smth) is in branch
+The changes without this `README.md` is in branch
 [`refactor/style`](https://github.com/onegentig/audacious-discord-rpc/tree/refactor/style).
 
-Don’t @ me about a missing licence,
-the original repo doesn’t have one either. \
+Do not @ me about the missing licence,
+the original repo doesn’t have one either ([#15](https://github.com/darktohka/audacious-plugin-rpc/issues/15)). \
 If you are the original author pls add one thx.
 
 **Before:**
