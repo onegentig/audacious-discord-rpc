@@ -1,4 +1,4 @@
-#include <discord_rpc.h>
+#include <discord-rpc.hpp>
 #include <libaudcore/audstrings.h>
 #include <libaudcore/drct.h>
 #include <libaudcore/hook.h>
@@ -16,6 +16,7 @@
 #define EXPORT __attribute__((visibility("default")))
 #define APPLICATION_ID "484736379171897344"
 
+static bool is_connected = false; // Guard, just in case
 static const char *SETTING_EXTRA_TEXT = "extra_text";
 
 class RPCPlugin : public GeneralPlugin {
@@ -35,29 +36,52 @@ class RPCPlugin : public GeneralPlugin {
 
 EXPORT RPCPlugin aud_plugin_instance;
 
-DiscordEventHandlers handlers;
-DiscordRichPresence presence;
-std::string fullTitle;
-std::string playingStatus;
+static discord::RPCManager &rpc = discord::RPCManager::get();
+static discord::Presence presence;
 
 void init_discord() {
-     memset(&handlers, 0, sizeof(handlers));
-     Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
+     rpc.setClientID(APPLICATION_ID).initialize();
+     rpc.onReady([](const discord::User&) {
+          is_connected = true;
+     })
+     .onDisconnected([](int, std::string_view) {
+          is_connected = false;
+     });
 }
 
-void update_presence() { Discord_UpdatePresence(&presence); }
+void clear_discord() {
+     if (!is_connected) return;
+     rpc.clearPresence();
+}
+
+void cleanup_discord() {
+     if (!is_connected) return;
+     rpc.clearPresence();
+     rpc.shutdown();
+}
+
+void update_presence() {
+     if (!is_connected) return;
+     rpc.setPresence(presence).refresh();
+}
 
 void init_presence() {
-     memset(&presence, 0, sizeof(presence));
-     presence.largeImageKey = "logo";
+     presence = discord::Presence{};
+     presence
+          .setLargeImageKey("logo")
+          .setLargeImageText("Audacious");
      update_presence();
 }
 
-void clear_discord() { Discord_ClearPresence(); }
-
-void cleanup_discord() {
-     Discord_ClearPresence();
-     Discord_Shutdown();
+std::string field_sanitise(const std::string &field) {
+     if (field.empty()) {
+          return "[unknown]";
+     } else if (field.length() > 128) {
+          return field.substr(0, 125) + "...";
+     } else if (field.length() < 2) {
+          return field + " ";
+     }
+     return field;
 }
 
 void title_changed() {
@@ -66,47 +90,43 @@ void title_changed() {
           return;
      }
 
-     const bool paused = aud_drct_get_paused();
+     const bool playing = !aud_drct_get_paused();
      const Tuple tuple = aud_drct_get_tuple();
 
      std::string title(tuple.get_str(Tuple::Title));
      std::string artist(tuple.get_str(Tuple::Artist));
      std::string album(tuple.get_str(Tuple::Album));
-     if (title.empty()) {
-          title = "[unknown]";
-     } else if (title.length() > 128) {
-          title = title.substr(0, 125) + "...";
-     } else if (title.length() < 2) {
-          title += " ";
-     }
+     title = field_sanitise(title);
+     artist = field_sanitise(artist);
+     album = album.empty() ? "" : field_sanitise(album);
 
-     if (artist.empty()) {
-          artist = "[unknown]";
-     } else if (artist.length() > 128) {
-          artist = artist.substr(0, 125) + "...";
-     } else if (artist.length() < 2) {
-          artist += " ";
-     }
+     presence
+          .setLargeImageKey("logo")
+          .setActivityType(discord::ActivityType::Listening)
+          .setStatusDisplayType(discord::StatusDisplayType::Name)
+          .setDetails(title.c_str())
+          .setState(artist.c_str())
+          .setLargeImageText(album.c_str())
+          .setSmallImageKey(playing ? "play" : "pause");
 
-     if (!paused) {
+     if (playing) {
           const auto clock = std::chrono::system_clock::now();
           const int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(clock.time_since_epoch()).count();
           int64_t start_ts = now_s - (aud_drct_get_time() / 1000);
-          presence.startTimestamp = start_ts;
+          presence.setStartTimestamp(start_ts);
+          if (tuple.get_value_type(Tuple::Length) == Tuple::Int && tuple.get_int(Tuple::Length) > 0)
+               presence.setEndTimestamp(start_ts + (tuple.get_int(Tuple::Length) / 1000));
      } else {
-          presence.startTimestamp = 0;
+          presence.setStartTimestamp(0).setEndTimestamp(0);
      }
 
-     presence.details = title.c_str();
-     presence.state = artist.c_str();
-     presence.smallImageKey = paused ? "pause" : "play";
      update_presence();
 }
 
 void update_title_presence(void *, void *) { title_changed(); }
 
 void open_github() {
-     system("xdg-open hhttps://github.com/onegentig/audacious-discord-rpc");
+     system("xdg-open https://github.com/onegentig/audacious-discord-rpc");
 }
 
 bool RPCPlugin::init() {
@@ -132,8 +152,11 @@ void RPCPlugin::cleanup() {
 }
 
 const char RPCPlugin::about[] = N_(
-    "Discord RPC music status plugin\n\nWritten by: Derzsi Daniel "
-    "<daniel@tohka.us>");
+    "Discord Rich Presence (RPC) playing status plugin\n\n"
+    "(c) onegen <onegen@onegen.dev> (2024–2025)\n"
+    "(c) Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n"
+    "https://github.com/onegentig/audacious-discord-rpc"
+);
 
 const PreferencesWidget RPCPlugin::widgets[]
     = {WidgetEntry(N_("Extra status text:"),
