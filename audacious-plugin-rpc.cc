@@ -71,19 +71,28 @@ void title_changed() {
 
      std::string title(tuple.get_str(Tuple::Title));
      std::string artist(tuple.get_str(Tuple::Artist));
-     if (title.empty()) title = "[unknown]";
-     if (artist.empty()) artist = "[unknown]";
-     artist = "by " + artist;
+     std::string album(tuple.get_str(Tuple::Album));
+     if (title.empty()) {
+          title = "[unknown]";
+     } else if (title.length() > 128) {
+          title = title.substr(0, 125) + "...";
+     } else if (title.length() < 2) {
+          title += " ";
+     }
+
+     if (artist.empty()) {
+          artist = "[unknown]";
+     } else if (artist.length() > 128) {
+          artist = artist.substr(0, 125) + "...";
+     } else if (artist.length() < 2) {
+          artist += " ";
+     }
 
      if (!paused) {
-          int64_t start = aud_drct_get_time() / 1000;
           const auto clock = std::chrono::system_clock::now();
-          const int64_t now_s
-              = std::chrono::duration_cast<std::chrono::seconds>(
-                    clock.time_since_epoch())
-                    .count();
-          const int64_t elapsed = now_s - start;
-          presence.startTimestamp = elapsed;
+          const int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(clock.time_since_epoch()).count();
+          int64_t start_ts = now_s - (aud_drct_get_time() / 1000);
+          presence.startTimestamp = start_ts;
      } else {
           presence.startTimestamp = 0;
      }
@@ -97,7 +106,7 @@ void title_changed() {
 void update_title_presence(void *, void *) { title_changed(); }
 
 void open_github() {
-     system("xdg-open https://github.com/darktohka/audacious-plugin-rpc");
+     system("xdg-open hhttps://github.com/onegentig/audacious-discord-rpc");
 }
 
 bool RPCPlugin::init() {
