@@ -3,24 +3,24 @@
 Discord Rich Presence (RPC) plugin for [Audacious][1]! \
 Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
 
-This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3],
-which was maintained between 2018 and 2022 by [Derzsi Dániel][5] et al.
-It migrates the IPC protocol and header from the [`discord/discord-rpc`][6]
-deprecated in 2019 to the newer [Discord Game SDK][7].\
-It makes use of the new `LISTENING` activity type, shows a progress bar
-and I just think it looks better.
-
 <div align="center">
      <img
           src=".github/img/popout.png"
-          alt="User popout" />
+          alt="User popout with Audacious Discord RPC" />
 </div>
+
+This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3],
+(made in 2018, abandoned in 2022) by [Derzsi Dániel][5] et al.
+It migrates the IPC protocol and header from the deprecated [`discord/discord-rpc`][6]
+to the newer [Discord Game SDK][7].\
+With the new SDK, it can make use of the new `LISTENING` activity type,
+showing a progress bar and “Listening to Audacious” status.
 
 **Before:**
 
 <img
      src=".github/img/before.png"
-     alt="User popout"
+     alt="Audacious Discord RPC (original) example screenshot taken 2024-09-19"
      align="center"
      width="70%" />
 
@@ -28,7 +28,7 @@ and I just think it looks better.
 
 <img
      src=".github/img/after.png"
-     alt="User popout"
+     alt="Audacious Discord RPC (onegen’s fork) example screenshot taken 2025-10-11"
      align="center"
      width="70%" />
 
@@ -57,17 +57,17 @@ with the fork’s additions open-sourced under the [MIT licence][8].
 - See [`LICENCE`](./LICENCE) file or [tl;drLegal][9] for more details.
 
 The code from the [original repository][3] is *without a licence*.
-The author(s) [have been prompted][10] to add one, but the repository is effectively abandoned
-and my the request was ignored (at the time of writing, at least). \
+The author(s) [have been asked][10] to add one, but the repository is effectively abandoned
+and my the request was ignored (at the time of writing). \
 In general, code related to Discord RPC/IPC is [this fork][2]’s own work (MIT)
 while code registering the plugin with Audacious is from the original repository (unlicensed).
 
 ## Credits
 
-- [onegen](https://github.com/onegentig)&thinsp;–&thinsp;modernisation/rewrite of this fork + maintanance (2024–2025)
-- [Derzsi Dániel](https://github.com/darktohka) et al.&thinsp;–&thinsp;original authors
-- [Олександр Немеш](https://github.com/Prevter)&thinsp;–&thinsp;creator of [`EclipseMenu/discord-presence`](https://github.com/EclipseMenu/discord-presence), a library used to interface with Discord’s Game SDK
-- and all the Discord and Audacious developers and contritutors
+- [onegen](https://github.com/onegentig)&thinsp;–&thinsp;RPC modernisation + fork maintanance
+- [Derzsi Dániel](https://github.com/darktohka) [et al.][11]&thinsp;–&thinsp;creators of the original plugin
+- [Олександр Немеш](https://github.com/Prevter)&thinsp;–&thinsp;creator of [`discord-presence`][12], the used Discord RPC library
+- and additionally all the Discord and Audacious developers and contritutors.
 
 [1]: https://audacious-media-player.org "Audacious Homepage"
 [2]: https://github.com/onegentig/audacious-plugin-rpc "Audacious Discord RPC (2024 fork) by onegen"
@@ -79,3 +79,5 @@ while code registering the plugin with Audacious is from the original repository
 [8]: https://en.wikipedia.org/wiki/MIT_License "MIT Licence on Wikipedia"
 [9]: https://www.tldrlegal.com/license/mit-license "MIT Licence on tl;drLegal"
 [10]: https://github.com/darktohka/audacious-plugin-rpc/issues/15 "Issue #15: Add a Licence"
+[11]: https://github.com/darktohka/audacious-plugin-rpc/graphs/contributors "Audacious Discord RPC (original) contributors"
+[12]: https://github.com/EclipseMenu/discord-presence "discord-presence library by O. Nemeš"
