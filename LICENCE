@@ -1,14 +1,7 @@
-Copyright © 2018–2022 Derzsi Dániel <daniel@tohka.us>
-Copyright © 2025 onegen <onegen@onegen.dev>
+Copyright © 2025 onegen <onegen@onegen.dev>, 2018–2022 Derzsi Dániel <daniel@tohka.us>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-----------
-
-Except where explicitly noted below, code authored by onegen in this repository are licensed under the MIT License (see above).
-The original project by Derzsi Dániel (original repo) was published without a license; that original code remains under the author's copyright (no license
-was specified as of 2024). Attempts to contact the original author to add a license were unsuccessful.

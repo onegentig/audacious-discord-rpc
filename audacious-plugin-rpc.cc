@@ -1,3 +1,17 @@
+/**
+ * @file audacious-plugin-rpc.cc
+ * @brief Discord Rich Presence plugin for Audacious
+ * @version 2.0
+ * @author onegen <onegen@onegen.dev>
+ * @author Derzsi Dániel <daniel@tohka.us>
+ * @date 2025-10-14 (last modified)
+ * 
+ * @license MIT
+ * @copyright Copyright (c) 2025      onegen
+ *                          2018–2022 Derzsi Dániel
+ * 
+ */
+
 #include <discord-rpc.hpp>
 #include <libaudcore/audstrings.h>
 #include <libaudcore/drct.h>
