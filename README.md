@@ -10,10 +10,10 @@ Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
 </div>
 
 This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3],
-(made in 2018, abandoned in 2022) by [Derzsi Dániel][5] et al.
-It migrates the IPC protocol and header from the deprecated [`discord/discord-rpc`][6]
-to the newer [Discord Game SDK][7].\
-With the new SDK, it can make use of the new `LISTENING` activity type,
+(made in 2018, abandoned in 2022) by [Derzsi Dániel][5] [et al.][11] \
+It migrates the IPC protocol from the deprecated [`discord/discord-rpc`][6]
+to the newer [Game SDK][7] using [`EclipseMenu/discord-presence`][12] library. \
+With the new SDK, it makes use of the new `LISTENING` activity type,
 showing a progress bar and “Listening to Audacious” status.
 
 **Before:**
@@ -34,14 +34,62 @@ showing a progress bar and “Listening to Audacious” status.
 
 ## Installation
 
-```sh
-git clone git@github.com:onegentig/audacious-discord-rpc.git
-cd audacious-discord-rpc
-mkdir build
-cd build
-cmake ..
-sudo make install
-```
+This plugin is not a part of Audacious plugin pack itself, so it has to be manually
+added to the Audacious plugin directory. Audacious is often installed system-wide,
+so `sudo` privilages will likely be required. Also note that this plugin cannot be
+installed to sandboxed versions of Audacious (e.g. Flatpak, Snap), as those are meant
+to be immutable, separate.
+(There might be hacks around that, but I don’t suggest doing so.)
+
+1. **Get the `libaudacious-plugin-rpc.so` file.** You can find the latest
+     released version in the [releases][2] section. Alternatively, you can
+     build it from source yourself:
+
+     ```sh
+     git clone git@github.com:onegentig/audacious-discord-rpc.git
+     cd audacious-discord-rpc
+     cmake -S . -B build
+     cmake --build build -j # Built file: build/libaudacious-plugin-rpc.so
+     ```
+
+2. **Find the plugin directory.** (Not necessary for manual builds, see below.)
+     Run the following command to find out where your Audacious files are located:
+
+     ```sh
+     pkg-config --variable=plugin_dir audacious
+     ```
+
+     The likely output would be `/usr/lib64/audacious` or `/usr/lib/x86_64-linux-gnu/audacious`.
+     The plugin should be placed in the `General` subdirectory of the printed path (as in “General plugins”).
+     As these are system directories, moving the plugin fill will require admin privilages.
+
+3. **Move the file.** If you downloaded a release, move the `libaudacious-plugin-rpc.so`
+     file to the plugin directory from the previous step. If you built it yourself,
+     simply run this command after the previous ones:
+
+     ```sh
+     sudo cmake --install build
+     ```
+
+     This internally calls the `pkg-config` command and does it all for you. Big thanks to
+     [Sturmlilie](https://github.com/Sturmlilie) for implementing this!
+
+4. **Enable the plugin.** In Audacious, open ‘Services’ on the top menu, then
+     open ‘Plug-Ins’ and in the ‘General’ tab, you should see ‘Discord RPC’ as shown
+     on the screenshot below. Checking the box will enable the plugin. The plugin has
+     a few configurable options, which you can change by clicking ‘Settings’ with the
+     plugin highlighted.
+
+<img
+     alt="Discord RPC in the Plug-Ins configuration window"
+     src=".github/plugins-menu.png"
+     width="60%%" />
+
+Quick uninstall: `sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so`.
+
+If you encounter any issues or crashes, please, open an [issue][10]! I *want* this to work so
+if something is broken, I’ll do my best to fix it. Alternatively, if you’re good with C++,
+and feel like helping out, check if you can’t fix something yourself. PRs are always appreciated! ❤️
 
 ## Licence
 
@@ -50,27 +98,20 @@ sudo make install
      src=".github/mit.png"
      width="15%" />
 
-This program is a free and source-available software,
-with the fork’s additions open-sourced under the [MIT licence][8].
+This is a free and open-source software, licensed under the [MIT licence][8].
 
 - <span title="Too long; didn’t read; not a lawyer">TL;DR;NAL</span>: Do absolutely whatever you want with the code, just include the LICENCE file if you re-distribute it.
 - See [`LICENCE`](./LICENCE) file or [tl;drLegal][9] for more details.
 
-The code from the [original repository][3] is *without a licence*.
-The author(s) [have been asked][10] to add one, but the repository is effectively abandoned
-and my the request was ignored (at the time of writing). \
-In general, code related to Discord RPC/IPC is [this fork][2]’s own work (MIT)
-while code registering the plugin with Audacious is from the original repository (unlicensed).
-
 ## Credits
 
 - [onegen](https://github.com/onegentig)&thinsp;–&thinsp;RPC modernisation + fork maintanance
-- [Derzsi Dániel](https://github.com/darktohka) [et al.][11]&thinsp;–&thinsp;creators of the original plugin
+- [Derzsi Dániel][5] [et al.][11]&thinsp;–&thinsp;creators of the original plugin
 - [Олександр Немеш](https://github.com/Prevter)&thinsp;–&thinsp;creator of [`discord-presence`][12], the used Discord RPC library
 - and additionally all the Discord and Audacious developers and contritutors.
 
 [1]: https://audacious-media-player.org "Audacious Homepage"
-[2]: https://github.com/onegentig/audacious-plugin-rpc "Audacious Discord RPC (2024 fork) by onegen"
+[2]: https://github.com/onegentig/audacious-discord-rpc/releases "Audacious Discord RPC (fork) Releases"
 [3]: https://github.com/darktohka/audacious-plugin-rpc "Audacious Discord RPC (original, abandoned) by D. Dániel"
 [4]: https://github.com/onegentig "onegen on GitHub"
 [5]: https://github.com/darktohka "Derzsi Dániel (DarkTohka) on GitHub"
@@ -78,6 +119,6 @@ while code registering the plugin with Audacious is from the original repository
 [7]: https://discord.com/developers/docs/rich-presence/using-with-the-game-sdk "Discord Game SDK documentation"
 [8]: https://en.wikipedia.org/wiki/MIT_License "MIT Licence on Wikipedia"
 [9]: https://www.tldrlegal.com/license/mit-license "MIT Licence on tl;drLegal"
-[10]: https://github.com/darktohka/audacious-plugin-rpc/issues/15 "Issue #15: Add a Licence"
+[10]: https://github.com/onegentig/audacious-discord-rpc/issues "Audacious Discord RPC (fork) Issues"
 [11]: https://github.com/darktohka/audacious-plugin-rpc/graphs/contributors "Audacious Discord RPC (original) contributors"
 [12]: https://github.com/EclipseMenu/discord-presence "discord-presence library by O. Nemeš"
