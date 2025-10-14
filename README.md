@@ -12,7 +12,7 @@ Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
 This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3],
 (made in 2018, abandoned in 2022) by [Derzsi Dániel][5] [et al.][11] \
 It migrates the IPC protocol from the deprecated [`discord/discord-rpc`][6]
-to the newer [Game SDK][7] using [`EclipseMenu/discord-presence`][12] library. \
+to the newer [Game SDK][7] using [`EclipseMenu/discord-presence`][12] library.
 With the new SDK, it makes use of the new `LISTENING` activity type,
 showing a progress bar and “Listening to Audacious” status.
 
@@ -34,12 +34,13 @@ showing a progress bar and “Listening to Audacious” status.
 
 ## Installation
 
-This plugin is not a part of Audacious plugin pack itself, so it has to be manually
-added to the Audacious plugin directory. Audacious is often installed system-wide,
-so `sudo` privilages will likely be required. Also note that this plugin cannot be
-installed to sandboxed versions of Audacious (e.g. Flatpak, Snap), as those are meant
-to be immutable, separate.
-(There might be hacks around that, but I don’t suggest doing so.)
+This plugin is not included in the official [Audacious plugins][13], so it has to be
+added to the Audacious plugin directory manually. Audacious is usually installed
+system-wide, so `sudo` privilages will likely be required.
+
+Also please note that this plugin cannot be properly installed to the sandboxed
+versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
+(There might be hacks around that, but I don’t suggest doing that.)
 
 1. **Get the `libaudacious-plugin-rpc.so` file.** You can find the latest
      released version in the [releases][2] section. Alternatively, you can
@@ -53,18 +54,23 @@ to be immutable, separate.
      ```
 
 2. **Find the plugin directory.** (Not necessary for manual builds, see below.)
-     Run the following command to find out where your Audacious files are located:
+     Run the following command to find out where to put the plugin file:
 
      ```sh
-     pkg-config --variable=plugin_dir audacious
+     echo "$(pkg-config --variable=plugin_dir audacious)/General"
      ```
 
-     The likely output would be `/usr/lib64/audacious` or `/usr/lib/x86_64-linux-gnu/audacious`.
-     The plugin should be placed in the `General` subdirectory of the printed path (as in “General plugins”).
-     As these are system directories, moving the plugin fill will require admin privilages.
+     Or if you’re using nushell:
 
-3. **Move the file.** If you downloaded a release, move the `libaudacious-plugin-rpc.so`
-     file to the plugin directory from the previous step. If you built it yourself,
+     ```nushell
+     $"(pkg-config --variable=plugin_dir audacious)/General"
+     ```
+
+     As it will likely print a system directory in `/usr`,
+     moving the plugin fill will require admin privilages.
+
+3. **Move the file.** If you downloaded the `libaudacious-plugin-rpc.so` from a release,
+     move the file to the directory from the previous step. If you built the plugin yourself,
      simply run this command after the previous ones:
 
      ```sh
@@ -82,8 +88,8 @@ to be immutable, separate.
 
 <img
      alt="Discord RPC in the Plug-Ins configuration window"
-     src=".github/plugins-menu.png"
-     width="60%%" />
+     src=".github/img/plugins-menu.png"
+     width="60%" />
 
 Quick uninstall: `sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so`.
 
@@ -122,3 +128,4 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 [10]: https://github.com/onegentig/audacious-discord-rpc/issues "Audacious Discord RPC (fork) Issues"
 [11]: https://github.com/darktohka/audacious-plugin-rpc/graphs/contributors "Audacious Discord RPC (original) contributors"
 [12]: https://github.com/EclipseMenu/discord-presence "discord-presence library by O. Nemeš"
+[13]: https://github.com/audacious-media-player/audacious-plugins "Official Audacious Plugins repository"
