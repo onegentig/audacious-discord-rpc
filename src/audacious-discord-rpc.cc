@@ -1,5 +1,5 @@
 /**
- * @file audacious-plugin-rpc.cc
+ * @file audacious-discord-rpc.cc
  * @brief Discord Rich Presence plugin for Audacious
  * @version 2.0
  * @author onegen <onegen@onegen.dev>
@@ -40,7 +40,7 @@ class RPCPlugin : public GeneralPlugin {
      static const PluginPreferences prefs;
 
      static constexpr PluginInfo info
-         = {N_("Discord RPC"), "audacious-plugin-rpc", about, &prefs};
+         = {N_("Discord RPC"), "discord-rpc", about, &prefs};
 
      constexpr RPCPlugin() : GeneralPlugin(info, false) {}
 

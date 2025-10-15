@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(audacious-plugin-rpc)
+project(audacious-discord-rpc)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(FindPkgConfig)
@@ -15,16 +15,20 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(discord-rpc)
-
 if(IS_DIRECTORY "${discord-rpc_SOURCE_DIR}")
   set_property(DIRECTORY ${discord-rpc_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
 endif()
 
-add_library(audacious-plugin-rpc SHARED audacious-plugin-rpc.cc)
-target_compile_features(audacious-plugin-rpc PUBLIC cxx_std_23)
-target_link_libraries(audacious-plugin-rpc PRIVATE discord-rpc)
-target_include_directories(audacious-plugin-rpc PRIVATE "${discord-rpc_SOURCE_DIR}/include")
+add_library(audacious-discord-rpc SHARED src/audacious-discord-rpc.cc)
+target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
+target_link_libraries(audacious-discord-rpc PRIVATE discord-rpc)
+target_include_directories(audacious-discord-rpc PRIVATE "${discord-rpc_SOURCE_DIR}/include")
+set_target_properties(audacious-discord-rpc
+  PROPERTIES
+  PREFIX ""
+  OUTPUT_NAME "discord-rpc"
+)
 
 PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
 set(INSTALL_DIR "${AUDACIOUS_PLUGIN_DIR}/General")
-install(TARGETS audacious-plugin-rpc LIBRARY DESTINATION ${INSTALL_DIR})
+install(TARGETS audacious-discord-rpc LIBRARY DESTINATION ${INSTALL_DIR})

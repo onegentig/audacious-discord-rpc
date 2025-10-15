@@ -42,7 +42,7 @@ Also please note that this plugin cannot be properly installed to the sandboxed
 versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
 (There might be hacks around that, but I don’t suggest doing that.)
 
-1. **Get the `libaudacious-plugin-rpc.so` file.** You can find the latest
+1. **Get the `discord-rpc.so` file.** You can find the latest
      released version in the [releases][2] section. Alternatively, you can
      build it from source yourself:
 
@@ -50,7 +50,7 @@ versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
      git clone git@github.com:onegentig/audacious-discord-rpc.git
      cd audacious-discord-rpc
      cmake -S . -B build
-     cmake --build build -j # Built file: build/libaudacious-plugin-rpc.so
+     cmake --build build -j # Built file: build/discord-rpc.so
      ```
 
 2. **Find the plugin directory.** (Not necessary for manual builds, see below.)
@@ -69,7 +69,7 @@ versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
      As it will likely print a system directory in `/usr`,
      moving the plugin fill will require admin privilages.
 
-3. **Move the file.** If you downloaded the `libaudacious-plugin-rpc.so` from a release,
+3. **Move the file.** If you downloaded the `discord-rpc.so` from a release,
      move the file to the directory from the previous step. If you built the plugin yourself,
      simply run this command after the previous ones:
 
@@ -91,7 +91,10 @@ versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
      src=".github/img/plugins-menu.png"
      width="60%" />
 
-Quick uninstall: `sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so`.
+Quick uninstall: `sudo rm $(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so`.
+
+The [older version][3] was called `libaudacious-plugin-rpc.so`; you can uninstall it with
+`sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so`.
 
 If you encounter any issues or crashes, please, open an [issue][10]! I *want* this to work so
 if something is broken, I’ll do my best to fix it. Alternatively, if you’re good with C++,
