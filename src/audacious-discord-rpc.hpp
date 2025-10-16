@@ -35,8 +35,7 @@
 #define PLUGIN_URL "https://github.com/onegentig/audacious-discord-rpc"
 #define DISCORD_APP_ID "484736379171897344"
 
-static bool is_connected = false;      // A guard, just in case
-static bool hide_when_paused = false;  // TODO: aud_get_bool
+static bool is_connected = false;  // A guard, just in case
 
 /* === Discord Functions === */
 

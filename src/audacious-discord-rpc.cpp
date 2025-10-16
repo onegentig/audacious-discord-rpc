@@ -21,9 +21,10 @@ class RPCPlugin : public GeneralPlugin {
      static const char about[];
      static const PreferencesWidget widgets[];
      static const PluginPreferences prefs;
+     static const char *const defaults[];
 
      static constexpr PluginInfo info
-         = {N_("Discord RPC"), "discord-rpc", about, &prefs};
+         = {N_(PLUGIN_NAME), PLUGIN_ID, about, &prefs};
 
      constexpr RPCPlugin() : GeneralPlugin(info, false) {}
 
@@ -41,8 +42,11 @@ const char RPCPlugin::about[] = N_(
 
 const PreferencesWidget RPCPlugin::widgets[]
     = {WidgetCheck(N_("Hide presence when paused"),
-                   WidgetBool(hide_when_paused, playback_to_presence)),
+                   WidgetBool(PLUGIN_ID, "hide_when_paused")),
        WidgetButton(N_("Show on GitHub"), {open_github})};
+
+const char *const RPCPlugin::defaults[]
+    = {"hide_when_paused", "FALSE", nullptr};
 
 const PluginPreferences RPCPlugin::prefs = {{widgets}};
 
@@ -93,7 +97,7 @@ void playback_to_presence() {
      }
 
      const bool playing = !aud_drct_get_paused();
-     if (hide_when_paused && !playing) {
+     if (aud_get_bool(PLUGIN_ID, "hide_when_paused") && !playing) {
           clear_discord();
           return;
      }
@@ -136,6 +140,7 @@ void playback_to_presence() {
 /* === Hook RPC to Audacious === */
 
 bool RPCPlugin::init() {
+     aud_config_set_defaults(PLUGIN_ID, defaults);
      init_discord();
      init_presence();
      hook_associate("playback ready", on_playback_update_rpc, nullptr);
