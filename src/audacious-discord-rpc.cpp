@@ -5,14 +5,15 @@
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
  * @date 2025-10-14 (last modified)
- * 
+ *
  * @license MIT
  * @copyright Copyright (c) 2025      onegen
  *                          2018–2022 Derzsi Dániel
- * 
+ *
  */
 
 #include <discord-rpc.hpp>
+
 #include <libaudcore/audstrings.h>
 #include <libaudcore/drct.h>
 #include <libaudcore/hook.h>
@@ -30,7 +31,7 @@
 #define EXPORT __attribute__((visibility("default")))
 #define APPLICATION_ID "484736379171897344"
 
-static bool is_connected = false; // Guard, just in case
+static bool is_connected = false;  // Guard, just in case
 static bool hide_when_paused = false;
 
 class RPCPlugin : public GeneralPlugin {
@@ -55,12 +56,8 @@ static discord::Presence presence;
 
 void init_discord() {
      rpc.setClientID(APPLICATION_ID).initialize();
-     rpc.onReady([](const discord::User&) {
-          is_connected = true;
-     })
-     .onDisconnected([](int, std::string_view) {
-          is_connected = false;
-     });
+     rpc.onReady([](const discord::User &) { is_connected = true; })
+         .onDisconnected([](int, std::string_view) { is_connected = false; });
 }
 
 void clear_discord() {
@@ -76,20 +73,15 @@ void cleanup_discord() {
 
 void update_presence() {
      if (!is_connected) return;
-     rpc
-          .clearPresence()
-          .refresh(); // TODO: Timestamps are very unreliably cleared.
+     rpc.clearPresence()
+         .refresh();  // TODO: Timestamps are very unreliably cleared.
                       // This helps a little, but it’s still very wonky.
-     rpc
-          .setPresence(presence)
-          .refresh();
+     rpc.setPresence(presence).refresh();
 }
 
 void init_presence() {
      presence = discord::Presence{};
-     presence
-          .setLargeImageKey("logo")
-          .setLargeImageText("Audacious");
+     presence.setLargeImageKey("logo").setLargeImageText("Audacious");
      update_presence();
 }
 
@@ -124,22 +116,26 @@ void title_changed() {
      artist = field_sanitise(artist);
      album = album.empty() ? "" : field_sanitise(album);
 
-     presence
-          .setLargeImageKey("logo")
-          .setActivityType(discord::ActivityType::Listening)
-          .setStatusDisplayType(discord::StatusDisplayType::Name)
-          .setDetails(title.c_str())
-          .setState(artist.c_str())
-          .setLargeImageText(album.c_str())
-          .setSmallImageKey(playing ? "play" : "pause");
+     presence.setLargeImageKey("logo")
+         .setActivityType(discord::ActivityType::Listening)
+         .setStatusDisplayType(discord::StatusDisplayType::Name)
+         .setDetails(title.c_str())
+         .setState(artist.c_str())
+         .setLargeImageText(album.c_str())
+         .setSmallImageKey(playing ? "play" : "pause");
 
      if (playing) {
           const auto clock = std::chrono::system_clock::now();
-          const int64_t now_ts = std::chrono::duration_cast<std::chrono::seconds>(clock.time_since_epoch()).count();
+          const int64_t now_ts
+              = std::chrono::duration_cast<std::chrono::seconds>(
+                    clock.time_since_epoch())
+                    .count();
           int64_t start_ts = now_ts - (aud_drct_get_time() / 1000);
           presence.setStartTimestamp(start_ts);
-          if (tuple.get_value_type(Tuple::Length) == Tuple::Int && tuple.get_int(Tuple::Length) > 0)
-               presence.setEndTimestamp(start_ts + (tuple.get_int(Tuple::Length) / 1000));
+          if (tuple.get_value_type(Tuple::Length) == Tuple::Int
+              && tuple.get_int(Tuple::Length) > 0)
+               presence.setEndTimestamp(
+                   start_ts + (tuple.get_int(Tuple::Length) / 1000));
      } else {
           presence.setStartTimestamp(0).setEndTimestamp(0);
      }
@@ -181,12 +177,11 @@ const char RPCPlugin::about[] = N_(
     " © onegen <onegen@onegen.dev> (2024–2025)\n"
     " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
     "Displays the current playing track as your Discord status.\n"
-    "(Discord should be running before this plugin is loaded.)"
-);
+    "(Discord should be running before this plugin is loaded.)");
 
-const PreferencesWidget RPCPlugin::widgets[] = {
-     WidgetCheck(N_("Hide presence when paused"), WidgetBool(hide_when_paused, title_changed)),
-     WidgetButton(N_("Show on GitHub"), {open_github})
-};
+const PreferencesWidget RPCPlugin::widgets[]
+    = {WidgetCheck(N_("Hide presence when paused"),
+                   WidgetBool(hide_when_paused, title_changed)),
+       WidgetButton(N_("Show on GitHub"), {open_github})};
 
 const PluginPreferences RPCPlugin::prefs = {{widgets}};
