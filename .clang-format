@@ -9,7 +9,8 @@ BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: 'true'
 ColumnLimit: '80'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
-IncludeBlocks: Regroup
+IncludeBlocks: Preserve
+SortIncludes: 'true'
 IndentPPDirectives: AfterHash
 IndentWidth: '5'
 NamespaceIndentation: Inner
