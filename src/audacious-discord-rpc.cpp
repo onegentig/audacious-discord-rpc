@@ -1,38 +1,20 @@
 /**
- * @file audacious-discord-rpc.cc
+ * @file audacious-discord-rpc.cpp
  * @brief Discord Rich Presence plugin for Audacious
  * @version 2.0
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-10-14 (last modified)
+ * @date 2025-10-17 (last modified)
  *
  * @license MIT
- * @copyright Copyright (c) 2025      onegen
+ * @copyright Copyright (c) 2024–2025 onegen
  *                          2018–2022 Derzsi Dániel
  *
  */
 
-#include <discord-rpc.hpp>
+#include "audacious-discord-rpc.hpp"
 
-#include <libaudcore/audstrings.h>
-#include <libaudcore/drct.h>
-#include <libaudcore/hook.h>
-#include <libaudcore/i18n.h>
-#include <libaudcore/plugin.h>
-#include <libaudcore/preferences.h>
-#include <libaudcore/runtime.h>
-#include <libaudcore/tuple.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <chrono>
-#include <iostream>
-
-#define EXPORT __attribute__((visibility("default")))
-#define APPLICATION_ID "484736379171897344"
-
-static bool is_connected = false;  // Guard, just in case
-static bool hide_when_paused = false;
+/* === Audacious Plugin Setup === */
 
 class RPCPlugin : public GeneralPlugin {
    public:
@@ -49,13 +31,30 @@ class RPCPlugin : public GeneralPlugin {
      void cleanup();
 };
 
+const char RPCPlugin::about[] = N_(
+    "Discord Rich Presence (RPC) playing status plugin\n"
+    "https://github.com/onegentig/audacious-discord-rpc\n"
+    " © onegen <onegen@onegen.dev> (2024–2025)\n"
+    " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
+    "Displays the current playing track as your Discord status.\n"
+    "(Discord should be running before this plugin is loaded.)");
+
+const PreferencesWidget RPCPlugin::widgets[]
+    = {WidgetCheck(N_("Hide presence when paused"),
+                   WidgetBool(hide_when_paused, playback_to_presence)),
+       WidgetButton(N_("Show on GitHub"), {open_github})};
+
+const PluginPreferences RPCPlugin::prefs = {{widgets}};
+
 EXPORT RPCPlugin aud_plugin_instance;
+
+/* === Discord RPC Setup === */
 
 static discord::RPCManager &rpc = discord::RPCManager::get();
 static discord::Presence presence;
 
 void init_discord() {
-     rpc.setClientID(APPLICATION_ID).initialize();
+     rpc.setClientID(DISCORD_APP_ID).initialize();
      rpc.onReady([](const discord::User &) { is_connected = true; })
          .onDisconnected([](int, std::string_view) { is_connected = false; });
 }
@@ -85,18 +84,9 @@ void init_presence() {
      update_presence();
 }
 
-std::string field_sanitise(const std::string &field) {
-     if (field.empty()) {
-          return "[unknown]";
-     } else if (field.length() > 128) {
-          return field.substr(0, 125) + "...";
-     } else if (field.length() < 2) {
-          return field + " ";
-     }
-     return field;
-}
+/* === Audacious playback -> Discord RPC (main function) === */
 
-void title_changed() {
+void playback_to_presence() {
      if (!aud_drct_get_playing() || !aud_drct_get_ready()) {
           clear_discord();
           return;
@@ -143,45 +133,26 @@ void title_changed() {
      update_presence();
 }
 
-void update_title_presence(void *, void *) { title_changed(); }
-
-void open_github() {
-     system("xdg-open https://github.com/onegentig/audacious-discord-rpc");
-}
+/* === Hook RPC to Audacious === */
 
 bool RPCPlugin::init() {
      init_discord();
      init_presence();
-     hook_associate("playback ready", update_title_presence, nullptr);
-     hook_associate("playback end", update_title_presence, nullptr);
-     hook_associate("playback stop", update_title_presence, nullptr);
-     hook_associate("playback pause", update_title_presence, nullptr);
-     hook_associate("playback unpause", update_title_presence, nullptr);
-     hook_associate("title change", update_title_presence, nullptr);
+     hook_associate("playback ready", on_playback_update_rpc, nullptr);
+     hook_associate("playback end", on_playback_update_rpc, nullptr);
+     hook_associate("playback stop", on_playback_update_rpc, nullptr);
+     hook_associate("playback pause", on_playback_update_rpc, nullptr);
+     hook_associate("playback unpause", on_playback_update_rpc, nullptr);
+     hook_associate("title change", on_playback_update_rpc, nullptr);
      return true;
 }
 
 void RPCPlugin::cleanup() {
-     hook_dissociate("playback ready", update_title_presence);
-     hook_dissociate("playback end", update_title_presence);
-     hook_dissociate("playback stop", update_title_presence);
-     hook_dissociate("playback pause", update_title_presence);
-     hook_dissociate("playback unpause", update_title_presence);
-     hook_dissociate("title change", update_title_presence);
+     hook_dissociate("playback ready", on_playback_update_rpc);
+     hook_dissociate("playback end", on_playback_update_rpc);
+     hook_dissociate("playback stop", on_playback_update_rpc);
+     hook_dissociate("playback pause", on_playback_update_rpc);
+     hook_dissociate("playback unpause", on_playback_update_rpc);
+     hook_dissociate("title change", on_playback_update_rpc);
      cleanup_discord();
 }
-
-const char RPCPlugin::about[] = N_(
-    "Discord Rich Presence (RPC) playing status plugin\n"
-    "https://github.com/onegentig/audacious-discord-rpc\n"
-    " © onegen <onegen@onegen.dev> (2024–2025)\n"
-    " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
-    "Displays the current playing track as your Discord status.\n"
-    "(Discord should be running before this plugin is loaded.)");
-
-const PreferencesWidget RPCPlugin::widgets[]
-    = {WidgetCheck(N_("Hide presence when paused"),
-                   WidgetBool(hide_when_paused, title_changed)),
-       WidgetButton(N_("Show on GitHub"), {open_github})};
-
-const PluginPreferences RPCPlugin::prefs = {{widgets}};
