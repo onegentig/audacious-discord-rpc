@@ -9,7 +9,7 @@ Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
           alt="User popout with Audacious Discord RPC" />
 </div>
 
-This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3],
+This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3]
 (made in 2018, abandoned in 2022) by [Derzsi Dániel][5] [et al.][11] \
 It migrates the IPC protocol from the deprecated [`discord/discord-rpc`][6]
 to the newer [Game SDK][7] using [`EclipseMenu/discord-presence`][12] library.
@@ -34,13 +34,14 @@ showing a progress bar and “Listening to Audacious” status.
 
 ## Installation
 
+> [!NOTE]
+> This plugin is *made for GNU/Linux* systems and is not tested for Windows or Mac.
+> Furthermore, it is *not possible* to install this plugin on sandboxed immutable
+> distributions of Audacious like Flatpak or Snap.
+
 This plugin is not included in the official [Audacious plugins][13], so it has to be
 added to the Audacious plugin directory manually. Audacious is usually installed
-system-wide, so `sudo` privilages will likely be required.
-
-Also please note that this plugin cannot be properly installed to the sandboxed
-versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
-(There might be hacks around that, but I don’t suggest doing that.)
+system-wide, so administrator privilages will likely be required.
 
 1. **Get the `discord-rpc.so` file.** You can find the latest
      released version in the [releases][2] section. Alternatively, you can
@@ -91,14 +92,38 @@ versions of Audacious (e.g. Flatpak, Snap), as those are meant to be immutable.
      src=".github/img/plugins-menu.png"
      width="60%" />
 
-Quick uninstall: `sudo rm $(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so`.
-
-The [older version][3] was called `libaudacious-plugin-rpc.so`; you can uninstall it with
-`sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so`.
-
 If you encounter any issues or crashes, please, open an [issue][10]! I *want* this to work so
 if something is broken, I’ll do my best to fix it. Alternatively, if you’re good with C++,
 and feel like helping out, check if you can’t fix something yourself. PRs are always appreciated! ❤️
+
+### Uninstallation
+
+To uninstall the plugin, simply delete the `discord-rpc.so` file from the Audacious
+“General plugins” directory (see step 2 of [Installation](#installation) above).
+A quick shell command:
+
+```sh
+sudo rm $(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so
+```
+
+…on nushell:
+
+```nushell
+sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so"
+```
+
+Also, if you used the [older (original) version][3] of the plugin (pre-fork), you
+might want to delete that file too. The older file was called `libaudacious-plugin-rpc.so`.
+
+```sh
+sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so
+```
+
+…on nushell:
+
+```nushell
+sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so"
+```
 
 ## Licence
 
