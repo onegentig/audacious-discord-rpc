@@ -11,10 +11,9 @@ Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
 
 This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3]
 (made in 2018, abandoned in 2022) by [Derzsi Dániel][5] [et al.][11] \
-It migrates the IPC protocol from the deprecated [`discord/discord-rpc`][6]
-to the newer [Game SDK][7] using [`EclipseMenu/discord-presence`][12] library.
-With the new SDK, it makes use of the new `LISTENING` activity type,
-showing a progress bar and “Listening to Audacious” status.
+It migrates the plugin from the deprecated [`discord/discord-rpc`][6]
+to the modernised [`EclipseMenu/discord-presence`][12], allowing it to use
+the new `LISTENING` activity type (“Listening to...”) and a progress bar.
 
 **Before:**
 
@@ -45,7 +44,8 @@ system-wide, so administrator privilages will likely be required.
 
 1. **Get the `discord-rpc.so` file.** You can find the latest
      released version in the [releases][2] section. Alternatively, you can
-     build it from source yourself:
+     build it from source yourself (req. `audacious-dev` aka `audacious-devel`
+     installed system-wide):
 
      ```sh
      git clone git@github.com:onegentig/audacious-discord-rpc.git
@@ -71,8 +71,13 @@ system-wide, so administrator privilages will likely be required.
      moving the plugin fill will require admin privilages.
 
 3. **Move the file.** If you downloaded the `discord-rpc.so` from a release,
-     move the file to the directory from the previous step. If you built the plugin yourself,
-     simply run this command after the previous ones:
+     move the file to the directory from the previous step. Simple `cp`:
+
+     ```sh
+     sudo cp ~/Downloads/discord-rpc.so $(pkg-config --variable=plugin_dir audacious)/General/
+     ```
+
+     If you built the plugin yourself, run this command instead:
 
      ```sh
      sudo cmake --install build
@@ -150,7 +155,6 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 [4]: https://github.com/onegentig "onegen on GitHub"
 [5]: https://github.com/darktohka "Derzsi Dániel (DarkTohka) on GitHub"
 [6]: https://github.com/discord/discord-rpc "Discord RPC Library (deprecated)"
-[7]: https://discord.com/developers/docs/rich-presence/using-with-the-game-sdk "Discord Game SDK documentation"
 [8]: https://en.wikipedia.org/wiki/MIT_License "MIT Licence on Wikipedia"
 [9]: https://www.tldrlegal.com/license/mit-license "MIT Licence on tl;drLegal"
 [10]: https://github.com/onegentig/audacious-discord-rpc/issues "Audacious Discord RPC (fork) Issues"
