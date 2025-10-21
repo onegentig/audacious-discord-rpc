@@ -33,7 +33,7 @@
 #define PLUGIN_NAME "Discord RPC"
 #define PLUGIN_ID "discord-rpc"
 #define PLUGIN_URL "https://github.com/onegentig/audacious-discord-rpc"
-#define DISCORD_APP_ID "484736379171897344"
+#define DISCORD_APP_ID "1428914566795890738"
 
 static bool is_connected = false;  // A guard, just in case
 
