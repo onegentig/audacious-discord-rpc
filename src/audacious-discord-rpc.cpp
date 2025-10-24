@@ -59,8 +59,19 @@ static discord::Presence presence;
 
 void init_discord() {
      rpc.setClientID(DISCORD_APP_ID).initialize();
-     rpc.onReady([](const discord::User &) { is_connected = true; })
-         .onDisconnected([](int, std::string_view) { is_connected = false; });
+     rpc.onReady([](const discord::User &) {
+             is_connected = true;
+             AUDINFO("Discord RPC Connected.\r\n");
+        })
+         .onDisconnected([](int, std::string_view) {
+              is_connected = false;
+              AUDINFO("Discord RPC Disconnected.\r\n");
+         })
+         .onErrored([](int, std::string_view msg) {
+              std::string err = "Discord RPC Error: ";
+              err += msg;
+              AUDERR("%s\r\n", err.c_str());
+         });
 }
 
 void clear_discord() {
