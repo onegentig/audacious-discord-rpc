@@ -15,21 +15,31 @@ It migrates the plugin from the deprecated [`discord/discord-rpc`][6]
 to the modernised [`EclipseMenu/discord-presence`][12], allowing it to use
 the new `LISTENING` activity type (“Listening to...”) and a progress bar.
 
-**Before:**
+**Former design (v1):**
 
 <img
      src=".github/img/before.png"
-     alt="Audacious Discord RPC (original) example screenshot taken 2024-09-19"
+     alt="Audacious Discord RPC (original) example screenshot taken 2025-11-05"
      align="center"
      width="70%" />
 
-**After:**
+**Fork (v2):**
 
 <img
      src=".github/img/after.png"
-     alt="Audacious Discord RPC (onegen’s fork) example screenshot taken 2025-10-11"
+     alt="Audacious Discord RPC (onegen’s fork) example screenshot taken 2025-11-05"
      align="center"
      width="70%" />
+
+**Fork – Experimental CAA:**
+
+<img
+     src=".github/img/after-experimental.png"
+     alt="Audacious Discord RPC (onegen’s fork, experimental branch) example screenshot taken 2025-11-05"
+     align="center"
+     width="70%" />
+
+<sub>NB: Cover art fetching is WiP, experimental, and not publicly available yet.</sub>
 
 ## Installation
 
