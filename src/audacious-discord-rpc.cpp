@@ -1,10 +1,10 @@
 /**
  * @file audacious-discord-rpc.cpp
  * @brief Discord Rich Presence plugin for Audacious
- * @version 2.1
+ * @version 2.2
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-10-17 (last modified)
+ * @date 2025-11-05 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2024–2025 onegen
@@ -41,12 +41,14 @@ const char RPCPlugin::about[] = N_(
     "(Discord should be running before this plugin is loaded.)");
 
 const PreferencesWidget RPCPlugin::widgets[]
-    = {WidgetCheck(N_("Hide presence when paused"),
+    = {WidgetCheck(N_("(UNSTABLE) Fetch album covers from MusicBrainz/CAA"),
+                   WidgetBool(PLUGIN_ID, "fetch_covers")),
+       WidgetCheck(N_("Hide presence when paused"),
                    WidgetBool(PLUGIN_ID, "hide_when_paused")),
        WidgetButton(N_("Show on GitHub"), {open_github})};
 
 const char *const RPCPlugin::defaults[]
-    = {"hide_when_paused", "FALSE", nullptr};
+    = {"fetch_covers", "FALSE", "hide_when_paused", "FALSE", nullptr};
 
 const PluginPreferences RPCPlugin::prefs = {{widgets}};
 
@@ -127,7 +129,8 @@ void playback_to_presence() {
          .setDetails(title.c_str())
          .setState(artist.c_str())
          .setLargeImageText(album.c_str())
-         .setSmallImageKey(playing ? "play" : "pause");
+         .setSmallImageKey(playing ? "play" : "pause")
+         .setSmallImageText("Audacious");
 
      if (playing) {
           const auto clock = std::chrono::system_clock::now();
@@ -145,7 +148,33 @@ void playback_to_presence() {
           presence.setStartTimestamp(0).setEndTimestamp(0);
      }
 
+     AUDINFO("RPC main: updated presence!\r\n");
      update_presence();
+
+     if (aud_get_bool(PLUGIN_ID, "fetch_covers")) {
+          std::string album_artist(tuple.get_str(Tuple::AlbumArtist));
+          AUDINFO("RPC main: starting cover art fetch (CAF) thread...\r\n");
+          cover_to_presence(album_artist.empty() ? artist : album_artist,
+                            album);
+     }
+}
+
+/* == Attempt to fetch cover art, if enabled */
+
+void cover_to_presence(const std::string &artist, const std::string &album) {
+     const auto req_id = ++req_id_last;
+     cover_fetch_running.store(true);
+     std::thread([artist, album, req_id] {
+          auto thread_req_id = req_id;
+          if (thread_req_id != req_id_last.load()) return;
+          if (auto u
+              = cover_lookup(artist, album, &req_id_last, thread_req_id)) {
+               if (thread_req_id == req_id_last.load()) {
+                    presence.setLargeImageKey(*u);
+                    update_presence();
+               }
+          }
+     }).detach();
 }
 
 /* === Hook RPC to Audacious === */
