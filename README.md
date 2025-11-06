@@ -15,7 +15,7 @@ It migrates the plugin from the deprecated [`discord/discord-rpc`][6]
 to the modernised [`EclipseMenu/discord-presence`][12], allowing it to use
 the new `LISTENING` activity type (“Listening to...”) and a progress bar.
 
-**Former design (v1):**
+**Original (v1.x):**
 
 <img
      src=".github/img/before.png"
@@ -23,7 +23,7 @@ the new `LISTENING` activity type (“Listening to...”) and a progress bar.
      align="center"
      width="70%" />
 
-**Fork (v2):**
+**This Fork (v2):**
 
 <img
      src=".github/img/after.png"
@@ -31,15 +31,15 @@ the new `LISTENING` activity type (“Listening to...”) and a progress bar.
      align="center"
      width="70%" />
 
-**Fork – Experimental CAA:**
+**This Fork + Experimental ‘Fetch Cover Art’ Option:**
 
 <img
      src=".github/img/after-experimental.png"
-     alt="Audacious Discord RPC (onegen’s fork, experimental branch) example screenshot taken 2025-11-05"
+     alt="Audacious Discord RPC (onegen’s fork, CAF on) example screenshot taken 2025-11-05"
      align="center"
      width="70%" />
 
-<sub>NB: Cover art fetching is WiP, experimental, and not publicly available yet.</sub>
+<sub><i>Note: Cover art fetching is experimental, unstable and WiP. It is available as an opt-in setting in pre-releases (since v2.2-pre2511A). Covers are fetched from MusicBrainz (CAA).</i></sub>
 
 ## Installation
 
@@ -60,7 +60,7 @@ system-wide, so administrator privilages will likely be required.
      ```sh
      git clone git@github.com:onegentig/audacious-discord-rpc.git
      cd audacious-discord-rpc
-     cmake -S . -B build
+     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
      cmake --build build -j # Built file: build/discord-rpc.so
      ```
 
@@ -110,6 +110,19 @@ system-wide, so administrator privilages will likely be required.
 If you encounter any issues or crashes, please, open an [issue][10]! I *want* this to work so
 if something is broken, I’ll do my best to fix it. Alternatively, if you’re good with C++,
 and feel like helping out, check if you can’t fix something yourself. PRs are always appreciated! ❤️
+
+This plugin prints a good amount of debug info when enabled. To specifically see only
+the plugin’s logs, run Audacious from a terminal like so:
+
+```sh
+audacious -VV 2>&1 | grep --line-buffered -i 'RPC'
+```
+
+…on nushell:
+
+```nushell
+audacious -VV o+e>| where $it =~ 'RPC'
+```
 
 ### Uninstallation
 
