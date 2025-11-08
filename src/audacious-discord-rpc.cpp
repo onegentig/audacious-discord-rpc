@@ -24,7 +24,7 @@ class RPCPlugin : public GeneralPlugin {
      static const char *const defaults[];
 
      static constexpr PluginInfo info
-         = {N_(PLUGIN_NAME), PLUGIN_ID, about, &prefs};
+         = {N_(PLUGIN_NAME), PLUGIN_ID, about, &prefs, 0};
 
      constexpr RPCPlugin() : GeneralPlugin(info, false) {}
 
@@ -32,25 +32,26 @@ class RPCPlugin : public GeneralPlugin {
      void cleanup();
 };
 
-const char RPCPlugin::about[] = N_(
-    "Discord Rich Presence (RPC) playing status plugin\n"
-    "https://github.com/onegentig/audacious-discord-rpc\n"
-    " © onegen <onegen@onegen.dev> (2024–2025)\n"
-    " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
-    "Displays the current playing track as your Discord status.\n"
-    "(Discord should be running before this plugin is loaded.)");
+const char RPCPlugin::about[]
+    = "Discord Rich Presence (RPC) playing status plugin\n"
+      "https://github.com/onegentig/audacious-discord-rpc\n"
+      " © onegen <onegen@onegen.dev> (2024–2025)\n"
+      " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
+      "Displays the current playing track as your Discord status.\n"
+      "(Discord should be running before this plugin is loaded.)";
 
 const PreferencesWidget RPCPlugin::widgets[]
     = {WidgetCheck(N_("(UNSTABLE) Fetch album covers from MusicBrainz/CAA"),
                    WidgetBool(PLUGIN_ID, "fetch_covers")),
        WidgetCheck(N_("Hide presence when paused"),
                    WidgetBool(PLUGIN_ID, "hide_when_paused")),
-       WidgetButton(N_("Show on GitHub"), {open_github})};
+       WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
 
 const char *const RPCPlugin::defaults[]
     = {"fetch_covers", "FALSE", "hide_when_paused", "FALSE", nullptr};
 
-const PluginPreferences RPCPlugin::prefs = {{widgets}};
+const PluginPreferences RPCPlugin::prefs
+    = {{widgets}, nullptr, nullptr, nullptr};
 
 EXPORT RPCPlugin aud_plugin_instance;
 

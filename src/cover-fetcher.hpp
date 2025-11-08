@@ -17,6 +17,7 @@
 #include <libaudcore/runtime.h>  // for logging
 #include <nlohmann/json.hpp>
 
+#include <cinttypes>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -171,7 +172,7 @@ std::optional<std::string> cover_lookup(
      auto caa = json::parse(*caa_json, nullptr, false);
      if (caa.is_discarded() || !caa.is_object() || caa["images"].empty())
           return std::nullopt;
-     AUDINFO("RPC CAF: CAA found %d images\r\n", caa["images"].size());
+     AUDINFO("RPC CAF: CAA found %" PRIu64 " images\r\n", caa["images"].size());
      for (auto& image : caa["images"]) {
           if (image.contains("front") && image["front"] == true
               && image.contains("thumbnails")
