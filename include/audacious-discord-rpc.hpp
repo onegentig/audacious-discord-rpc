@@ -2,7 +2,7 @@
  * @file audacious-discord-rpc.hpp
  * @brief Discord Rich Presence plugin for Audacious (header)
  * @version 2.2
- * @author onegen <onegen@onegen.dev>
+ * @author Нурлан Кърамызов <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
  * @date 2025-11-05 (last modified)
  *
@@ -31,7 +31,7 @@
 #include <iostream>
 #include <thread>
 
-#include "cover-fetcher.hpp"
+#include "covers-fetcher.hpp"
 
 #define EXPORT __attribute__((visibility("default")))
 

@@ -2,8 +2,8 @@
  * @file cover-fetcher.hpp
  * @brief Fetching logic for album cover arts for Audacious Discord RPC
  * (experimental)
- * @author onegen <onegen@onegen.dev>
- * @date 2025-11-05 (last modified)
+ * @author Нурлан Кърамызов <onegen@onegen.dev>
+ * @date 2025-11-12 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2025 onegen
@@ -14,7 +14,6 @@
 #define JSON_NOEXCEPTION
 
 #include <curl/curl.h>
-#include <libaudcore/runtime.h>  // for logging
 #include <nlohmann/json.hpp>
 
 #include <cinttypes>
@@ -22,15 +21,23 @@
 #include <string>
 #include <unordered_map>
 
-#include "cover-cache.hpp"
+#include "covers-cache.hpp"
+
+#ifndef AUDDBG
+    #define AUDDBG(...) ((void)0)
+#endif
+#ifndef AUDINFO
+    #define AUDINFO(...) ((void)0)
+#endif
+#ifndef AUDERR
+    #define AUDERR(...) ((void)0)
+#endif
 
 using json = nlohmann::json;
 
 /* === Cache === */
 
-static CoverArtCache cache({.max_items = 128,
-                            .max_bytes = 4 * 1024 * 1024,
-                            .ttl = std::chrono::seconds(3600)});
+static CoverArtCache cache(128, 2 * 1024 * 1024, std::chrono::seconds(3600));
 
 /* === HTTP Fetcher === */
 
@@ -133,7 +140,7 @@ std::optional<std::string> cover_lookup(
      auto esc_artist = esc_quotes(artist);
      std::string q = "(\"" + esc_album + "\"^2 OR alias:\"" + esc_album
                      + "\")^3 AND (artistname:\"" + esc_artist
-                     + "\"^2 OR label:\"" + esc_artist
+                     + "\"^2 OR artist:\"" + esc_artist + "\"^2 OR label:\"" + esc_artist
                      + "\") AND (format:\"Digital Media\"^2 OR format:*)"
                      + " AND NOT status:\"Pseudo-Release\"";
      std::string req = "https://musicbrainz.org/ws/2/release?query="
@@ -172,7 +179,7 @@ std::optional<std::string> cover_lookup(
      auto caa = json::parse(*caa_json, nullptr, false);
      if (caa.is_discarded() || !caa.is_object() || caa["images"].empty())
           return std::nullopt;
-     AUDINFO("RPC CAF: CAA found %" PRIu64 " images\r\n", caa["images"].size());
+     AUDINFO("RPC CAF: CAA found %zu images\r\n", caa["images"].size());
      for (auto& image : caa["images"]) {
           if (image.contains("front") && image["front"] == true
               && image.contains("thumbnails")
