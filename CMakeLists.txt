@@ -46,8 +46,9 @@ project(audacious-discord-rpc
   LANGUAGES CXX
 )
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_library(audacious-discord-rpc SHARED ${SOURCES})
+target_include_directories(audacious-discord-rpc PRIVATE "include")
 target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
 
 # === DEPENDENCIES === #
@@ -60,7 +61,6 @@ target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
 
 PKG_SEARCH_MODULE(AUDACIOUS REQUIRED audacious>=4.0)
 PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
-add_definitions(${AUDACIOUS_CFLAGS})
 
 # == O. Nemeš’s Discord RPC == #
 
