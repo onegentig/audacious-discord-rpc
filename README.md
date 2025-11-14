@@ -6,11 +6,11 @@ Displays what you’re vibing to in your Discord profile. 🧑‍🎤🎶
 <div align="center">
      <img
           src=".github/img/popout.png"
-          alt="User popout with Audacious Discord RPC" />
+          alt="Example user popout with Audacious Discord RPC" />
 </div>
 
-This is a modernisation fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3]
-(made in 2018, abandoned in 2022) by [Derzsi Dániel][5] [et al.][11] \
+This is a modernisation hard-fork by [onegen][4] of [`darktohka/audacious-plugin-rpc`][3]
+(made in 2018, abandoned in 2022) by [DarkTohka][5] [et al.][11] \
 It migrates the plugin from the deprecated [`discord/discord-rpc`][6]
 to the modernised [`EclipseMenu/discord-presence`][12], allowing it to use
 the new `LISTENING` activity type (“Listening to...”) and a progress bar.
@@ -31,7 +31,7 @@ the new `LISTENING` activity type (“Listening to...”) and a progress bar.
      align="center"
      width="70%" />
 
-**This Fork + Experimental ‘Fetch Cover Art’ Option:**
+**This Fork + Experimental ‘Fetch Cover Art’ Option (WiP):**
 
 <img
      src=".github/img/after-experimental.png"
@@ -39,9 +39,11 @@ the new `LISTENING` activity type (“Listening to...”) and a progress bar.
      align="center"
      width="70%" />
 
-<sub><i>Note: Cover art fetching is experimental, unstable and WiP. It is available as an opt-in setting in pre-releases (since v2.2-pre2511A). Covers are fetched from MusicBrainz (CAA).</i></sub>
+<sub><i>Note: Cover art fetching is experimental, unstable and WiP. It is available as an opt-in setting in [pre-releases](https://github.com/onegentig/audacious-discord-rpc/releases) (since v2.2-pre2511A). Covers are fetched from [MusicBrainz][15] ([CAA][16]).</i></sub>
 
 ## Installation
+
+<!-- TODO: Make clearer + separate installing & building -->
 
 > [!NOTE]
 > This plugin is *made for GNU/Linux* systems and is not tested for Windows or Mac.
@@ -71,10 +73,8 @@ system-wide, so administrator privilages will likely be required.
      echo "$(pkg-config --variable=plugin_dir audacious)/General"
      ```
 
-     Or if you’re using nushell:
-
      ```nushell
-     $"(pkg-config --variable=plugin_dir audacious)/General"
+     $"(pkg-config --variable=plugin_dir audacious)/General" # nushell
      ```
 
      As it will likely print a system directory in `/usr`,
@@ -93,8 +93,7 @@ system-wide, so administrator privilages will likely be required.
      sudo cmake --install build
      ```
 
-     This internally calls the `pkg-config` command and does it all for you. Big thanks to
-     [Sturmlilie](https://github.com/Sturmlilie) for implementing this!
+     This internally calls the `pkg-config` command and does it all for you.
 
 4. **Enable the plugin.** In Audacious, open ‘Services’ on the top menu, then
      open ‘Plug-Ins’ and in the ‘General’ tab, you should see ‘Discord RPC’ as shown
@@ -118,10 +117,8 @@ the plugin’s logs, run Audacious from a terminal like so:
 audacious -VV 2>&1 | grep --line-buffered -i 'RPC'
 ```
 
-…on nushell:
-
 ```nushell
-audacious -VV o+e>| where $it =~ 'RPC'
+audacious -VV o+e>| grep --line-buffered -i 'RPC' # nushell
 ```
 
 ### Uninstallation
@@ -134,10 +131,8 @@ A quick shell command:
 sudo rm $(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so
 ```
 
-…on nushell:
-
 ```nushell
-sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so"
+sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so" # nushell
 ```
 
 Also, if you used the [older (original) version][3] of the plugin (pre-fork), you
@@ -147,10 +142,8 @@ might want to delete that file too. The older file was called `libaudacious-plug
 sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so
 ```
 
-…on nushell:
-
 ```nushell
-sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so"
+sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so" # nushell
 ```
 
 ## Licence
@@ -167,15 +160,15 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 
 ## Credits
 
-- [onegen](https://github.com/onegentig)&thinsp;–&thinsp;RPC modernisation + fork maintanance
-- [Derzsi Dániel][5] [et al.][11]&thinsp;–&thinsp;creators of the original plugin
-- [Олександр Немеш](https://github.com/Prevter)&thinsp;–&thinsp;creator of [`discord-presence`][12], the used Discord RPC library
-- and additionally all the Discord and Audacious developers and contritutors.
+- [Нурлан “onegen” Кърамызов][4]&thinsp;–&thinsp;developer of this continuation fork
+- [Derzsi “DarkTohka” Dániel][5], [et al.][11]&thinsp;–&thinsp;developers of the original plugin
+- [Олександр “Prevter” Немеш][14]&thinsp;–&thinsp;developer of [`discord-presence`][12], the used Discord RPC library
+- and additionally all the Discord & Audacious developers and contritutors.
 
 [1]: https://audacious-media-player.org "Audacious Homepage"
 [2]: https://github.com/onegentig/audacious-discord-rpc/releases "Audacious Discord RPC (fork) Releases"
 [3]: https://github.com/darktohka/audacious-plugin-rpc "Audacious Discord RPC (original, abandoned) by D. Dániel"
-[4]: https://github.com/onegentig "onegen on GitHub"
+[4]: https://github.com/onegentig "Нурлан Кърамызов (onegen) on GitHub"
 [5]: https://github.com/darktohka "Derzsi Dániel (DarkTohka) on GitHub"
 [6]: https://github.com/discord/discord-rpc "Discord RPC Library (deprecated)"
 [8]: https://en.wikipedia.org/wiki/MIT_License "MIT Licence on Wikipedia"
@@ -184,3 +177,6 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 [11]: https://github.com/darktohka/audacious-plugin-rpc/graphs/contributors "Audacious Discord RPC (original) contributors"
 [12]: https://github.com/EclipseMenu/discord-presence "discord-presence library by O. Nemeš"
 [13]: https://github.com/audacious-media-player/audacious-plugins "Official Audacious Plugins repository"
+[14]: https://github.com/Prevter "Олександр Немеш (Prevter) on GitHub"
+[15]: https://musicbrainz.org "MusicBrainz (official website)"
+[16]: https://musicbrainz.org/doc/Cover_Art_Archive "Cover Art Archive in MusicBrainz Documentation"
