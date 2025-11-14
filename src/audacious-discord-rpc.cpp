@@ -2,7 +2,7 @@
  * @file audacious-discord-rpc.cpp
  * @brief Discord Rich Presence plugin for Audacious
  * @version 2.2
- * @author onegen <onegen@onegen.dev>
+ * @author Нурлан Кърамызов <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
  * @date 2025-11-05 (last modified)
  *
