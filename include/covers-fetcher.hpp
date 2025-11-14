@@ -3,7 +3,7 @@
  * @brief Fetching logic for album cover arts for Audacious Discord RPC
  * (experimental)
  * @author Нурлан Кърамызов <onegen@onegen.dev>
- * @date 2025-11-12 (last modified)
+ * @date 2025-11-14 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2025 onegen
@@ -24,20 +24,23 @@
 #include "covers-cache.hpp"
 
 #ifndef AUDDBG
-    #define AUDDBG(...) ((void)0)
+#     define AUDDBG(...) ((void)0)
 #endif
 #ifndef AUDINFO
-    #define AUDINFO(...) ((void)0)
+#     define AUDINFO(...) ((void)0)
 #endif
 #ifndef AUDERR
-    #define AUDERR(...) ((void)0)
+#     define AUDERR(...) ((void)0)
 #endif
 
 using json = nlohmann::json;
 
 /* === Cache === */
 
-static CoverArtCache cache(128, 2 * 1024 * 1024, std::chrono::seconds(3600));
+static CoverArtCache cache(
+    /* max_items */ 256,
+    /* max_bytes (1 MiB) */ (1 << 20),
+    /* TTL (1 hr) */ std::chrono::seconds(3600));
 
 /* === HTTP Fetcher === */
 
@@ -140,7 +143,8 @@ std::optional<std::string> cover_lookup(
      auto esc_artist = esc_quotes(artist);
      std::string q = "(\"" + esc_album + "\"^2 OR alias:\"" + esc_album
                      + "\")^3 AND (artistname:\"" + esc_artist
-                     + "\"^2 OR artist:\"" + esc_artist + "\"^2 OR label:\"" + esc_artist
+                     + "\"^2 OR artist:\"" + esc_artist + "\"^2 OR label:\""
+                     + esc_artist
                      + "\") AND (format:\"Digital Media\"^2 OR format:*)"
                      + " AND NOT status:\"Pseudo-Release\"";
      std::string req = "https://musicbrainz.org/ws/2/release?query="
