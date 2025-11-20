@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(audacious-discord-rpc)
+project(audacious-discord-rpc VERSION 2.1)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
@@ -15,6 +15,10 @@ include(FetchContent)
 include(FindPkgConfig)
 include(ExternalProject)
 find_package(Git)
+
+set(SOURCES src/audacious-discord-rpc.cpp)
+add_library(audacious-discord-rpc SHARED ${SOURCES})
+target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
 
 if(WIN32)
   set(audacious_VERSION "4.5.1")
@@ -38,7 +42,7 @@ if(WIN32)
   FILE(REMOVE "${audacious_ARCHIVE}")
   ExternalProject_Add(audacious
     SOURCE_DIR "${CMAKE_BINARY_DIR}/${audacious_ROOT_DIR}"
-    CONFIGURE_COMMAND bash -c "./configure --enable-qt --disable-gtk"
+    CONFIGURE_COMMAND bash -c "./configure --disable-qt --disable-gtk"
     BUILD_COMMAND make
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE TRUE
@@ -77,9 +81,6 @@ if(WIN32)
   )
 endif()
 
-set(SOURCES src/audacious-discord-rpc.cpp)
-add_library(audacious-discord-rpc SHARED ${SOURCES})
-target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
 target_link_libraries(audacious-discord-rpc PRIVATE discord-rpc)
 target_include_directories(audacious-discord-rpc PRIVATE "${discord-rpc_SOURCE_DIR}/include")
 set_target_properties(audacious-discord-rpc
@@ -88,6 +89,12 @@ set_target_properties(audacious-discord-rpc
   OUTPUT_NAME "discord-rpc"
 )
 
-PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
+if(WIN32)
+  set(INSTALL_DIR "C:/Program Files (x86)/Audacious/lib/audacious/General")
+else()
+  PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
+  set(INSTALL_DIR "${AUDACIOUS_PLUGIN_DIR}/General")
+endif()
+
 set(INSTALL_DIR "${AUDACIOUS_PLUGIN_DIR}/General")
 install(TARGETS audacious-discord-rpc LIBRARY DESTINATION ${INSTALL_DIR})
