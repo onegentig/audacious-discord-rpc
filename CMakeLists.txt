@@ -16,6 +16,13 @@ include(FindPkgConfig)
 include(ExternalProject)
 find_package(Git)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Og -fsanitize=undefined")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -march=native")
+
 set(SOURCES src/audacious-discord-rpc.cpp)
 add_library(audacious-discord-rpc SHARED ${SOURCES})
 target_compile_features(audacious-discord-rpc PUBLIC cxx_std_23)
