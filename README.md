@@ -43,57 +43,49 @@ the new `LISTENING` activity type (“Listening to...”) and a progress bar.
 
 ## Installation
 
-<!-- TODO: Make clearer + separate installing & building -->
-
 > [!NOTE]
-> This plugin is *made for GNU/Linux* systems and is not tested for Windows or Mac.
-> Furthermore, it is *not possible* to install this plugin on sandboxed immutable
+> It is *not possible* to install this plugin on sandboxed immutable
 > distributions of Audacious like Flatpak or Snap.
 
 This plugin is not included in the official [Audacious plugins][13], so it has to be
 added to the Audacious plugin directory manually. Audacious is usually installed
-system-wide, so administrator privilages will likely be required.
+system-wide, so administrator privilages will likely be required. \
+Plugin is compiled for Linux and Windows (10+).
 
-1. **Get the `discord-rpc.so` file.** You can find the latest
-     released version in the [releases][2] section. Alternatively, you can
-     build it from source yourself (req. `audacious-dev` aka `audacious-devel`
-     installed system-wide):
+1. **Get the `discord-rpc` plugin file.** In the [releases][2] section, see the
+     latest version – a ZIP file with the compiled plugin should be available
+     for Linux and Windows. Releases labeled "Pre-Release" have yet-untested
+     features and might cause crashes – if that sounds bad to you, stick to
+     "Latest". :)
 
-     ```sh
-     git clone git@github.com:onegentig/audacious-discord-rpc.git
-     cd audacious-discord-rpc
-     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-     cmake --build build -j # Built file: build/discord-rpc.so
-     ```
+     The plugin file is `discord-rpc.so` for Linux and
+     `discord-rpc.dll` for Windows.
 
-2. **Find the plugin directory.** (Not necessary for manual builds, see below.)
-     Run the following command to find out where to put the plugin file:
+2. **Find the plugin directory.** More specific notes on finding it are in the included
+     `INSTALL.*.txt`. On Linux, you can find the directory via `pkg-config` if you
+     installed Audacious as a system package:
 
      ```sh
      echo "$(pkg-config --variable=plugin_dir audacious)/General"
      ```
 
-     ```nushell
-     $"(pkg-config --variable=plugin_dir audacious)/General" # nushell
-     ```
+     On Windows, it depends on where you installed the music player.
+     The default location is `C:\Program Files (x86)\Audacious`.
+     The plugin directory is within that installation folder in
+     `lib\audacious\General` subdirectory, so with the default root:
+     `C:\Program Files (x86)\Audacious\lib\audacious\General`.
 
-     As it will likely print a system directory in `/usr`,
-     moving the plugin fill will require admin privilages.
+     On all platforms it should be called ‘General’ and be filled with
+     other default plugins (`.so` or `.dll` files).
 
-3. **Move the file.** If you downloaded the `discord-rpc.so` from a release,
-     move the file to the directory from the previous step. Simple `cp`:
+3. **Copy the plugin there.** Once you found the directory, copy the
+     `discord-rpc.{so,dll}` file there. You’ll likely need administrator
+     (sudo) privilages if installed system-wide. A shortcut for
+     Linux users:
 
      ```sh
      sudo cp ~/Downloads/discord-rpc.so $(pkg-config --variable=plugin_dir audacious)/General/
      ```
-
-     If you built the plugin yourself, run this command instead:
-
-     ```sh
-     sudo cmake --install build
-     ```
-
-     This internally calls the `pkg-config` command and does it all for you.
 
 4. **Enable the plugin.** In Audacious, open ‘Services’ on the top menu, then
      open ‘Plug-Ins’ and in the ‘General’ tab, you should see ‘Discord RPC’ as shown
@@ -118,32 +110,45 @@ audacious -VV 2>&1 | grep --line-buffered -i 'RPC'
 ```
 
 ```nushell
-audacious -VV o+e>| grep --line-buffered -i 'RPC' # nushell
+audacious -VV o+e>| grep --line-buffered -i 'RPC' # for nushell
 ```
 
 ### Uninstallation
 
 To uninstall the plugin, simply delete the `discord-rpc.so` file from the Audacious
-“General plugins” directory (see step 2 of [Installation](#installation) above).
+‘General’ plugins directory (see step 2 of [Installation](#installation) above).
 A quick shell command:
 
 ```sh
 sudo rm $(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so
 ```
 
-```nushell
-sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/discord-rpc.so" # nushell
-```
-
 Also, if you used the [older (original) version][3] of the plugin (pre-fork), you
-might want to delete that file too. The older file was called `libaudacious-plugin-rpc.so`.
+might want to delete that, too. The older file was called `libaudacious-plugin-rpc.so`.
 
 ```sh
 sudo rm $(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so
 ```
 
-```nushell
-sudo rm $"(pkg-config --variable=plugin_dir audacious)/General/libaudacious-plugin-rpc.so" # nushell
+## Building
+
+**TODO:** I will make a more proper building guide later. If you ever used CMake before though,
+it is rather standard. On Linux, you need `audacious-dev` (DEB) / `audacious-devel` (RPM)
+package installed system-wide (Audacious headers) as well as cURL, git and CMake. \
+On Windows, compilation is possible only on [MSYS2](https://www.msys2.org) MINGW64 environment
+and you’ll need something like this (may be incomplete):
+
+```bash
+pacman -Syu
+pacman -S base-devel git mingw-w64-x86_64-toolchain mingw-w64-x86_64-gcc mingw-w64-x86_64-glib2 mingw-w64-x86_64-cmake mingw-w64-x86_64-pkg-config
+```
+
+After that, it’s just a matter of this: (both platforms)
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+sudo cmake --install build # optionally copies to General, if found
 ```
 
 ## Licence
@@ -160,7 +165,7 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 
 ## Credits
 
-- [Нурлан “onegen” Кърамызов][4]&thinsp;–&thinsp;developer of this continuation fork
+- [onegen][4]&thinsp;–&thinsp;developer of this continuation fork
 - [Derzsi “DarkTohka” Dániel][5], [et al.][11]&thinsp;–&thinsp;developers of the original plugin
 - [Олександр “Prevter” Немеш][14]&thinsp;–&thinsp;developer of [`discord-presence`][12], the used Discord RPC library
 - and additionally all the Discord & Audacious developers and contritutors.
@@ -168,7 +173,7 @@ This is a free and open-source software, licensed under the [MIT licence][8].
 [1]: https://audacious-media-player.org "Audacious Homepage"
 [2]: https://github.com/onegentig/audacious-discord-rpc/releases "Audacious Discord RPC (fork) Releases"
 [3]: https://github.com/darktohka/audacious-plugin-rpc "Audacious Discord RPC (original, abandoned) by D. Dániel"
-[4]: https://github.com/onegentig "Нурлан Кърамызов (onegen) on GitHub"
+[4]: https://github.com/onegentig "onegen on GitHub"
 [5]: https://github.com/darktohka "Derzsi Dániel (DarkTohka) on GitHub"
 [6]: https://github.com/discord/discord-rpc "Discord RPC Library (deprecated)"
 [8]: https://en.wikipedia.org/wiki/MIT_License "MIT Licence on Wikipedia"
