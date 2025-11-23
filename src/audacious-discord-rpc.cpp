@@ -2,9 +2,9 @@
  * @file audacious-discord-rpc.cpp
  * @brief Discord Rich Presence plugin for Audacious
  * @version 2.2
- * @author Нурлан Кърамызов <onegen@onegen.dev>
+ * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-11-05 (last modified)
+ * @date 2025-11-22 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2024–2025 onegen
@@ -40,15 +40,20 @@ const char RPCPlugin::about[]
       "Displays the current playing track as your Discord status.\n"
       "(Discord should be running before this plugin is loaded.)";
 
-const PreferencesWidget RPCPlugin::widgets[]
-    = {WidgetCheck(N_("(UNSTABLE) Fetch album covers from MusicBrainz/CAA"),
-                   WidgetBool(PLUGIN_ID, "fetch_covers")),
-       WidgetCheck(N_("Hide presence when paused"),
-                   WidgetBool(PLUGIN_ID, "hide_when_paused")),
-       WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
+const PreferencesWidget RPCPlugin::widgets[] = {
+#if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
+    WidgetCheck(N_("(UNSTABLE) Fetch album covers from MusicBrainz/CAA"),
+                WidgetBool(PLUGIN_ID, "fetch_covers")),
+#endif
+    WidgetCheck(N_("Hide presence when paused"),
+                WidgetBool(PLUGIN_ID, "hide_when_paused")),
+    WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
 
-const char *const RPCPlugin::defaults[]
-    = {"fetch_covers", "FALSE", "hide_when_paused", "FALSE", nullptr};
+const char *const RPCPlugin::defaults[] = {
+#if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
+    "fetch_covers", "FALSE",
+#endif
+    "hide_when_paused", "FALSE", nullptr};
 
 const PluginPreferences RPCPlugin::prefs
     = {{widgets}, nullptr, nullptr, nullptr};
@@ -163,6 +168,9 @@ void playback_to_presence() {
 /* == Attempt to fetch cover art, if enabled */
 
 void cover_to_presence(const std::string &artist, const std::string &album) {
+#if (defined(DISABLE_RPC_CAF) && DISABLE_RPC_CAF)
+     return;
+#else
      const auto req_id = ++req_id_last;
      cover_fetch_running.store(true);
      std::thread([artist, album, req_id] {
@@ -176,6 +184,7 @@ void cover_to_presence(const std::string &artist, const std::string &album) {
                }
           }
      }).detach();
+#endif
 }
 
 /* === Hook RPC to Audacious === */

@@ -2,9 +2,9 @@
  * @file audacious-discord-rpc.hpp
  * @brief Discord Rich Presence plugin for Audacious (header)
  * @version 2.2
- * @author Нурлан Кърамызов <onegen@onegen.dev>
+ * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-11-05 (last modified)
+ * @date 2025-11-22 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2024–2025 onegen
@@ -31,7 +31,9 @@
 #include <iostream>
 #include <thread>
 
-#include "covers-fetcher.hpp"
+#if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
+#     include "covers-fetcher.hpp"
+#endif
 
 #define EXPORT __attribute__((visibility("default")))
 
