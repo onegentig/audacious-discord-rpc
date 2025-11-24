@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include/**",
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/build/_deps/discord-rpc-src/**",
+                "${workspaceFolder}/build/_deps/nlohmann_json-src/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/lib64/ccache/g++",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/build/_deps/audacious-src/src/**",
+                "${workspaceFolder}/build/_deps/discord-rpc-src/**",
+                "${workspaceFolder}/build/_deps/nlohmann_json-src/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
