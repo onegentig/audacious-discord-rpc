@@ -1,9 +1,11 @@
+# Makefile stuff
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles
-Makefile
 
+# Built stuff
 build
-
+*.zip
+*.dll
 *.so
 *.a
