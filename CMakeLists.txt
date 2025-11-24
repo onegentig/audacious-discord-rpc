@@ -122,13 +122,20 @@ endif()
 # cURL requiring capability of cover art fetching is disabled there.
 #
 
-find_package(CURL QUIET)
-if(WIN32 OR NOT CURL_FOUND)
-  set(DISABLE_RPC_CAF TRUE)
-  target_compile_definitions(audacious-discord-rpc PRIVATE DISABLE_RPC_CAF=1)
-  message(STATUS "No cURL ⇒ cover art fetching will not be available.")
-else()
+if(WIN32)
   set(DISABLE_RPC_CAF FALSE)
+  set(CURL_FOUND FALSE)
+  message(STATUS "WIN build: WinHTTP will be used for cover art fetching.")
+else()
+  find_package(CURL QUIET)
+  if(NOT CURL_FOUND)
+    set(DISABLE_RPC_CAF TRUE)
+    target_compile_definitions(audacious-discord-rpc PRIVATE DISABLE_RPC_CAF=1)
+    message(WARNING "LIN build, no cURL: cover art fetching disabled.")
+  else()
+    set(DISABLE_RPC_CAF FALSE)
+    message(STATUS "LIN build, found cURL: cURL will be used for cover art fetching.")
+  endif()
 endif()
 
 # == N. Lohmann's C++ JSON library == #
@@ -163,7 +170,14 @@ target_link_libraries(audacious-discord-rpc PRIVATE
 )
 
 if(NOT DISABLE_RPC_CAF)
-  target_link_libraries(audacious-discord-rpc PRIVATE CURL::libcurl)
+  if(WIN32)
+    target_link_libraries(audacious-discord-rpc PRIVATE winhttp)
+  elseif(CURL_FOUND)
+    target_link_libraries(audacious-discord-rpc PRIVATE CURL::libcurl)
+  endif()
+endif()
+
+if(CURL_FOUND AND NOT DISABLE_RPC_CAF)
 endif()
 
 set_target_properties(audacious-discord-rpc

@@ -32,7 +32,7 @@
 #include <thread>
 
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
-#     include "covers-fetcher.hpp"
+#     include "covers.hpp"
 #endif
 
 #define EXPORT __attribute__((visibility("default")))

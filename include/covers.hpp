@@ -1,9 +1,8 @@
 /**
- * @file cover-fetcher.hpp
- * @brief Fetching logic for album cover arts for Audacious Discord RPC
- * (experimental)
- * @author Нурлан Кърамызов <onegen@onegen.dev>
- * @date 2025-11-14 (last modified)
+ * @file covers.hpp
+ * @brief Cover art fetching functionality for Audacious Discord RPC.
+ * @author onegen <onegen@onegen.dev>
+ * @date 2025-11-24 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2025 onegen
@@ -23,14 +22,10 @@
 
 #include "covers-cache.hpp"
 
-#ifndef AUDDBG
-#     define AUDDBG(...) ((void)0)
-#endif
-#ifndef AUDINFO
-#     define AUDINFO(...) ((void)0)
-#endif
-#ifndef AUDERR
-#     define AUDERR(...) ((void)0)
+#ifdef _WIN32
+#     include "fetch-win.hpp"  // Uses WinHTTP
+#else
+#     include "fetch-lin.hpp"  // Uses cURL (libcurl)
 #endif
 
 using json = nlohmann::json;
@@ -41,45 +36,6 @@ static CoverArtCache cache(
     /* max_items */ 256,
     /* max_bytes (1 MiB) */ (1 << 20),
     /* TTL (1 hr) */ std::chrono::seconds(3600));
-
-/* === HTTP Fetcher === */
-
-static const char* ua
-    = "Audacious Discord RPC/2.2 "
-      "(+https://github.com/onegentig/audacious-discord-rpc)";
-
-static size_t write_cb(void* c, size_t s, size_t n, void* u) {
-     ((std::string*)u)->append((char*)c, s * n);
-     return s * n;
-}
-
-static std::optional<std::string> fetch(const std::string& url) noexcept {
-     AUDDBG("RPC CAF: fetching %s\r\n", url.c_str());
-     CURL* c = curl_easy_init();
-     if (!c) return std::nullopt;
-     std::string buf;
-     curl_easy_setopt(c, CURLOPT_URL, url.c_str());
-     curl_easy_setopt(c, CURLOPT_USERAGENT, ua);
-     curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, write_cb);
-     curl_easy_setopt(c, CURLOPT_WRITEDATA, &buf);
-     curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, 5000L);
-     curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, 5000L);
-     curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
-     curl_easy_setopt(c, CURLOPT_NOPROGRESS, 1L);
-     curl_easy_setopt(c, CURLOPT_FAILONERROR, 0L);
-     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
-     curl_easy_setopt(c, CURLOPT_TCP_FASTOPEN, 1L);
-     curl_easy_setopt(c, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-     curl_easy_setopt(c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-     CURLcode r = curl_easy_perform(c);
-     curl_easy_cleanup(c);
-     if (r != CURLE_OK) {
-          AUDERR("RPC CAF: cURL err %d\r\n", r);
-          return std::nullopt;
-     }
-
-     return buf;
-}
 
 /* === Helpers === */
 
@@ -114,19 +70,11 @@ std::optional<std::string> cover_lookup(
           AUDINFO("RPC CAF: Cache miss.\r\n");
      }
 
-     // 2 second debounce (in case user is mashing NEXT
-     // (MB is heavily rate-limited)
+     // 2 second debounce (in case user is mashing NEXT)
      for (int i = 0; i < 20; ++i) {
-          // 20 × 100 ms = 2000 ms = 2 s
+          // 20 sleeps × 100 ms = 2000 ms = 2 s
           if (is_cancelled(active_req_id, this_req_id)) return std::nullopt;
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
-     }
-
-     // MB (prepare query)
-     CURL* c = curl_easy_init();
-     if (!c) {
-          AUDERR("RPC CAF: cURL init for esc failed!\r\n");
-          return std::nullopt;
      }
 
      /* The query disregards the track artist, focusing on the album artist a la
@@ -147,10 +95,10 @@ std::optional<std::string> cover_lookup(
                      + esc_artist
                      + "\") AND (format:\"Digital Media\"^2 OR format:*)"
                      + " AND NOT status:\"Pseudo-Release\"";
+     auto enc_q = uri_encode(q);
+     if (!enc_q) return std::nullopt;
      std::string req = "https://musicbrainz.org/ws/2/release?query="
-                       + std::string(curl_easy_escape(c, q.c_str(), 0))
-                       + "&fmt=json";
-     curl_easy_cleanup(c);
+                       + enc_q.value() + "&fmt=json";
 
      // MB (get release MBID)
      if (is_cancelled(active_req_id, this_req_id)) return std::nullopt;
@@ -195,7 +143,6 @@ std::optional<std::string> cover_lookup(
           }
      }
 
-     // Nada
      AUDERR("RPC CAF: no front image!\r\n");
      return std::nullopt;
 }
