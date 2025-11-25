@@ -27,16 +27,22 @@
 #     define AUDERR(...) ((void)0)
 #endif
 
-/** @brief User-Agent */
-static const char* ua
-    = "Audacious Discord RPC/2.2 "
-      "(+https://github.com/onegentig/audacious-discord-rpc)";
+constexpr unsigned long FETCH_TIMEO = 15000;  // [ms]
+
+/* === Helpers === */
 
 /** @brief Write callback for cURL */
 static size_t write_cb(void* c, size_t s, size_t n, void* u) {
      ((std::string*)u)->append((char*)c, s * n);
      return s * n;
 }
+
+/* === Exported Function === */
+
+/** @brief User-Agent */
+static const char* ua
+    = "Audacious Discord RPC/2.2 "
+      "(+https://github.com/onegen-dev/audacious-discord-rpc)";
 
 static std::optional<std::string> fetch(const std::string& url) noexcept {
      AUDDBG("RPC CAF: fetching %s\r\n", url.c_str());
@@ -47,8 +53,8 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      curl_easy_setopt(c, CURLOPT_USERAGENT, ua);
      curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, write_cb);
      curl_easy_setopt(c, CURLOPT_WRITEDATA, &buf);
-     curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, 5000L);
-     curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, 5000L);
+     curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, FETCH_TIMEO);
+     curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, FETCH_TIMEO);
      curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
      curl_easy_setopt(c, CURLOPT_NOPROGRESS, 1L);
      curl_easy_setopt(c, CURLOPT_FAILONERROR, 0L);

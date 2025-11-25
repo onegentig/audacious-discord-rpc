@@ -29,6 +29,8 @@
 #     define AUDERR(...) ((void)0)
 #endif
 
+constexpr DWORD FETCH_TIMEO = 15000;  // [ms]
+
 /* === Helpers === */
 
 /**
@@ -45,34 +47,22 @@ std::wstring wstringify(const std::string& str) {
 }
 
 /**
- * @brief Converts Windows std::wstring to UTF-8 std::string
- * @cite https://geeksforgeeks.org/cpp/convert-wstring-to-string-in-c
- */
-std::string dewstringify(const std::wstring& wstr) {
-     if (wstr.empty()) return std::string();
-     size_t size = wcstombs(NULL, wstr.c_str(), 0) + 1;
-     char* buf = new char[size];
-     wcstombs(buf, wstr.c_str(), size);
-     std::string str(buf);
-     delete[] buf;
-     return str;
-}
-
-/**
  * @brief Gets last Windows API error as a string
  * @cite https://stackoverflow.com/a/17387176
  */
 static std::string GetLastErrorAsString() {
      auto err = GetLastError();
      if (err == 0) return std::string("NONE");
-     char* buf;
+
+     LPSTR buf;
      size_t size = FormatMessageA(
          FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
              | FORMAT_MESSAGE_IGNORE_INSERTS,
          NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buf, 0,
          NULL);
+
      std::string msg(buf, size);
-     delete[] buf;
+     if (buf) LocalFree(buf);
      return msg;
 }
 
@@ -81,7 +71,7 @@ static std::string GetLastErrorAsString() {
 /** @brief User-Agent */
 static const wchar_t* ua
     = L"Audacious-Discord-RPC/2.2 "
-      "(+https://github.com/onegentig/audacious-discord-rpc)";
+      "(+https://github.com/onegen-dev/audacious-discord-rpc)";
 
 static std::optional<std::string> fetch(const std::string& url) noexcept {
      AUDDBG("RPC CAF: fetching %s\r\n", url.c_str());
@@ -133,7 +123,9 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
           AUDINFO("RPC CAF: WinHTTP OpenRequest succeeded\r\n");
      }
 
-     bool res = WinHttpSendRequest(req, NULL, 0, NULL, 0, 0, 0);
+     bool res = WinHttpSetTimeouts(req, FETCH_TIMEO, FETCH_TIMEO, FETCH_TIMEO,
+                                   FETCH_TIMEO);
+     if (res) res |= WinHttpSendRequest(req, NULL, 0, NULL, 0, 0, 0);
      if (res) res |= WinHttpReceiveResponse(req, NULL);
      if (!res) {
           AUDERR("RPC CAF: WinHTTP SendRequest err %s\r\n",
@@ -184,5 +176,5 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
 }
 
 static std::optional<std::string> uri_encode(const std::string& str) noexcept {
-     return str;  // This is handled by WinHttpOpenRequest
+     return str;  // This is handled by WinHttpOpenRequest in fetch()
 }
