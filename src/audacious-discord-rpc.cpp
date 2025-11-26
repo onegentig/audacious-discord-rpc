@@ -4,10 +4,10 @@
  * @version 2.2
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-11-22 (last modified)
+ * @date 2025-11-26 (last modified)
  *
  * @license MIT
- * @copyright Copyright (c) 2024–2025 onegen
+ * @copyright Copyright (c) 2024      onegen
  *                          2018–2022 Derzsi Dániel
  *
  */
@@ -34,7 +34,7 @@ class RPCPlugin : public GeneralPlugin {
 
 const char RPCPlugin::about[]
     = "Discord Rich Presence (RPC) playing status plugin\n"
-      "https://github.com/onegentig/audacious-discord-rpc\n"
+      "https://github.com/onegen-dev/audacious-discord-rpc\n"
       " © onegen <onegen@onegen.dev> (2024–2025)\n"
       " © Derzsi Dániel <daniel@tohka.us> et al. (2018–2022)\n\n"
       "Displays the current playing track as your Discord status.\n"
@@ -110,6 +110,7 @@ void init_presence() {
 /* === Audacious playback -> Discord RPC (main function) === */
 
 void playback_to_presence() {
+     if (!is_connected) return;
      if (!aud_drct_get_playing() || !aud_drct_get_ready()) {
           clear_discord();
           return;
