@@ -127,9 +127,22 @@ void playback_to_presence() {
      String title = tuple.get_str(Tuple::Title);
      String artist = tuple.get_str(Tuple::Artist);
      String album = tuple.get_str(Tuple::Album);
+     if (!title) {
+          // Fallback to filename
+          title = tuple.get_str(Tuple::Basename);
+          if (!title) {
+               // Give up
+               AUDINFO(
+                   "RPC main: no title or filename found, clearing "
+                   "presence.\r\n");
+               clear_discord();
+               return;
+          }
+     }
+
      title = field_sanitise(title);
      artist = field_sanitise(artist);
-     bool has_album = !audstr_empty(album);
+     bool has_album = !!album;
      album = has_album ? field_sanitise(album) : album;
 
      presence.setLargeImageKey("logo")
@@ -137,12 +150,9 @@ void playback_to_presence() {
          .setStatusDisplayType(discord::StatusDisplayType::Name)
          .setDetails((const char *)title)
          .setState((const char *)artist)
+         .setLargeImageText(has_album ? (const char *)album : "")
          .setSmallImageKey(playing ? "play" : "pause")
          .setSmallImageText("Audacious");
-
-     if (has_album) {
-          presence.setLargeImageText((const char *)album);
-     }
 
      if (playing) {
           const auto clock = std::chrono::system_clock::now();
