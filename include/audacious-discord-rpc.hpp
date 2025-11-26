@@ -24,7 +24,6 @@
 #include <libaudcore/runtime.h>
 #include <libaudcore/tuple.h>
 #include <stdint.h>
-#include <string.h>
 
 #include <atomic>
 #include <chrono>
@@ -74,6 +73,34 @@ std::string field_sanitise(const std::string &field) {
      } else if (field.length() < 2) {
           return field + " ";
      }
+     return field;
+}
+
+bool audstr_empty(const String &str) {
+     const char *str_c = str;
+     return (!str_c || !*str_c || strlen(str_c) == 0);
+}
+
+String field_sanitise(const String &field) {
+     if (audstr_empty(field)) {
+          return String("[unknown]");
+     }
+
+     const char *field_c = field;
+     auto field_len = strlen(field_c);
+     if (field_len > 128) {
+          StringBuf buf(128 + 1);
+          memcpy(buf, field_c, 125);
+          memcpy(buf + 125, "...", 4);
+          return String(buf.settle());
+     } else if (field_len < 2) {
+          StringBuf buf(field_len + 2);
+          memcpy(buf, field_c, field_len);
+          buf[field_len] = ' ';
+          buf[field_len + 1] = '\0';
+          return String(buf.settle());
+     }
+
      return field;
 }
 

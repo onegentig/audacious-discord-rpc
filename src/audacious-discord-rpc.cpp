@@ -122,22 +122,27 @@ void playback_to_presence() {
           return;
      }
 
+     AUDDBG("RPC main: updating presence...\r\n");
      const Tuple tuple = aud_drct_get_tuple();
-     std::string title(tuple.get_str(Tuple::Title));
-     std::string artist(tuple.get_str(Tuple::Artist));
-     std::string album(tuple.get_str(Tuple::Album));
+     String title = tuple.get_str(Tuple::Title);
+     String artist = tuple.get_str(Tuple::Artist);
+     String album = tuple.get_str(Tuple::Album);
      title = field_sanitise(title);
      artist = field_sanitise(artist);
-     album = album.empty() ? "" : field_sanitise(album);
+     bool has_album = !audstr_empty(album);
+     album = has_album ? field_sanitise(album) : album;
 
      presence.setLargeImageKey("logo")
          .setActivityType(discord::ActivityType::Listening)
          .setStatusDisplayType(discord::StatusDisplayType::Name)
-         .setDetails(title.c_str())
-         .setState(artist.c_str())
-         .setLargeImageText(album.c_str())
+         .setDetails((const char *)title)
+         .setState((const char *)artist)
          .setSmallImageKey(playing ? "play" : "pause")
          .setSmallImageText("Audacious");
+
+     if (has_album) {
+          presence.setLargeImageText((const char *)album);
+     }
 
      if (playing) {
           const auto clock = std::chrono::system_clock::now();
@@ -158,11 +163,15 @@ void playback_to_presence() {
      AUDINFO("RPC main: updated presence!\r\n");
      update_presence();
 
-     if (aud_get_bool(PLUGIN_ID, "fetch_covers")) {
-          std::string album_artist(tuple.get_str(Tuple::AlbumArtist));
+     if (has_album && aud_get_bool(PLUGIN_ID, "fetch_covers")) {
+          String album_artist = tuple.get_str(Tuple::AlbumArtist);
+          bool has_album_artist = !audstr_empty(album_artist);
+
+          // Cover fetching still works on std::strings
           AUDINFO("RPC main: starting cover art fetch (CAF) thread...\r\n");
-          cover_to_presence(album_artist.empty() ? artist : album_artist,
-                            album);
+          cover_to_presence(has_album_artist ? (const char *)album_artist
+                                             : (const char *)artist,
+                            (const char *)album);
      }
 }
 
