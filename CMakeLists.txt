@@ -32,8 +32,11 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Og -fsanitize=undefined")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Ofast -march=native")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Og -fsanitize=undefined")
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -pedantic")
+endif()
 
 # === DEFINITION === #
 
@@ -87,7 +90,6 @@ if(WIN32)
 else()
   PKG_SEARCH_MODULE(AUDACIOUS REQUIRED audacious>=4.0)
   PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -pedantic") # Causes BS errors on Windows
 endif()
 
 # == O. Nemeš’s Discord RPC == #
