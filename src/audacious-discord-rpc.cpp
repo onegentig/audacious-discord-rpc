@@ -40,6 +40,11 @@ const char RPCPlugin::about[]
       "Displays the current playing track as your Discord status.\n"
       "(Discord should be running before this plugin is loaded.)";
 
+static const ComboItem statusDisplayItems[]
+    = {ComboItem(N_("Application"), static_cast<int>(discord::StatusDisplayType::Name)),
+       ComboItem(N_("Title"), static_cast<int>(discord::StatusDisplayType::Details)),
+       ComboItem(N_("Artist"), static_cast<int>(discord::StatusDisplayType::State))};
+
 const PreferencesWidget RPCPlugin::widgets[] = {
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
     WidgetCheck(N_("(UNSTABLE) Fetch album covers from MusicBrainz/CAA"),
@@ -47,13 +52,18 @@ const PreferencesWidget RPCPlugin::widgets[] = {
 #endif
     WidgetCheck(N_("Hide presence when paused"),
                 WidgetBool(PLUGIN_ID, "hide_when_paused")),
+    WidgetCombo(N_("Status display:"),
+                WidgetInt(PLUGIN_ID, "status_display_type"),
+                {{statusDisplayItems}}),
     WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
 
 const char *const RPCPlugin::defaults[] = {
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
     "fetch_covers", "FALSE",
 #endif
-    "hide_when_paused", "FALSE", nullptr};
+    "hide_when_paused", "FALSE",
+    "status_display_type", std::to_string(static_cast<int>(discord::StatusDisplayType::Name)).c_str(),
+    nullptr};
 
 const PluginPreferences RPCPlugin::prefs
     = {{widgets}, nullptr, nullptr, nullptr};
@@ -145,9 +155,11 @@ void playback_to_presence() {
      bool has_album = !!album;
      album = has_album ? field_sanitise(album) : album;
 
+     int status_display_type = aud_get_int(PLUGIN_ID, "status_display_type");
+
      presence.setLargeImageKey("logo")
          .setActivityType(discord::ActivityType::Listening)
-         .setStatusDisplayType(discord::StatusDisplayType::Name)
+         .setStatusDisplayType(static_cast<discord::StatusDisplayType>(status_display_type))
          .setDetails((const char *)title)
          .setState((const char *)artist)
          .setLargeImageText(has_album ? (const char *)album : "")
