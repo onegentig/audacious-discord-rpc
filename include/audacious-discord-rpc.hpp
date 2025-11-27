@@ -30,6 +30,13 @@
 #include <iostream>
 #include <thread>
 
+#ifdef _WIN32
+#     include <shellapi.h>
+#     include <windows.h>
+#else
+#     include <cstdlib>
+#endif
+
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
 #     include "covers.hpp"
 #endif
@@ -104,4 +111,22 @@ String field_sanitise(const String &field) {
      return field;
 }
 
-void open_github() { system("xdg-open " PLUGIN_URL); }
+void open_github() {
+#ifdef _WIN32
+     auto ret
+         = ShellExecuteW(NULL, L"open", L"" PLUGIN_URL, NULL, NULL, SW_NORMAL);
+     if ((intptr_t)ret <= 32) AUDERR("Failed to open URL: %s\r\n", PLUGIN_URL);
+          /** @cite
+           * https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew#return-value
+           */
+#else
+     const char *cmd = "xdg-open " PLUGIN_URL;
+     int ret = system(cmd);
+     if (ret == -1 || ret == 127)
+          AUDERR("Failed to open URL: %s\r\n", PLUGIN_URL);
+          /* -1 is fork/exec error, 127 is command not found.
+           * Other error codes from the command itself have to
+           * do with the user’s environment and are not worth
+           * blocking over. */
+#endif
+}

@@ -28,12 +28,13 @@ find_package(Git REQUIRED)
 
 # === COMPILER OPTS === #
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Og -fsanitize=undefined")
+add_compile_options(-Wall -Wextra -Wpedantic)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Ofast -march=native")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Og -fsanitize=undefined")
 
 # === DEFINITION === #
 
@@ -87,7 +88,6 @@ if(WIN32)
 else()
   PKG_SEARCH_MODULE(AUDACIOUS REQUIRED audacious>=4.0)
   PKG_GET_VARIABLE(AUDACIOUS_PLUGIN_DIR audacious plugin_dir)
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -pedantic") # Causes BS errors on Windows
 endif()
 
 # == O. Nemeš’s Discord RPC == #
@@ -148,6 +148,28 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(nlohmann_json)
+
+# === LINTER === #
+
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy" QUIET)
+if(CLANG_TIDY_EXE)
+  set(CLANG_TIDY_OPTS 
+    "-checks=-*,modernize-*,bugprone-*,performance-*"
+    "-warnings-as-errors=*"
+    "--use-color"
+  )
+  add_custom_target(check
+    COMMAND ${CLANG_TIDY_EXE}
+      ${CLANG_TIDY_OPTS}
+      -p ${CMAKE_BINARY_DIR}
+      ${SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    USES_TERMINAL
+  )
+  message(STATUS "clang-tidy found! Usage: 'cmake --build build --target check'")
+else()
+  message(WARNING "clang-tidy not found: linting not possible!")
+endif()
 
 # === LINKING === #
 
