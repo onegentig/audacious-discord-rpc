@@ -149,28 +149,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(nlohmann_json)
 
-# === LINTER === #
-
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy" QUIET)
-if(CLANG_TIDY_EXE)
-  set(CLANG_TIDY_OPTS 
-    "-checks=-*,modernize-*,bugprone-*,performance-*"
-    "-warnings-as-errors=*"
-    "--use-color"
-  )
-  add_custom_target(check
-    COMMAND ${CLANG_TIDY_EXE}
-      ${CLANG_TIDY_OPTS}
-      -p ${CMAKE_BINARY_DIR}
-      ${SOURCES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    USES_TERMINAL
-  )
-  message(STATUS "clang-tidy found! Usage: 'cmake --build build --target check'")
-else()
-  message(WARNING "clang-tidy not found: linting not possible!")
-endif()
-
 # === LINKING === #
 
 if(WIN32)
