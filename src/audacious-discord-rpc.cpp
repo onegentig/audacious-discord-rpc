@@ -40,10 +40,10 @@ const char RPCPlugin::about[]
       "Displays the current playing track as your Discord status.\n"
       "(Discord should be running before this plugin is loaded.)";
 
-static const ComboItem statusDisplayItems[]
+static const ComboItem status_display_items[]
     = {ComboItem(N_("Application"), static_cast<int>(discord::StatusDisplayType::Name)),
-       ComboItem(N_("Title"), static_cast<int>(discord::StatusDisplayType::Details)),
-       ComboItem(N_("Artist"), static_cast<int>(discord::StatusDisplayType::State))};
+       ComboItem(N_("Track title"), static_cast<int>(discord::StatusDisplayType::Details)),
+       ComboItem(N_("Track artist"), static_cast<int>(discord::StatusDisplayType::State))};
 
 const PreferencesWidget RPCPlugin::widgets[] = {
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
@@ -54,7 +54,7 @@ const PreferencesWidget RPCPlugin::widgets[] = {
                 WidgetBool(PLUGIN_ID, "hide_when_paused")),
     WidgetCombo(N_("Status display:"),
                 WidgetInt(PLUGIN_ID, "status_display_type"),
-                {{statusDisplayItems}}),
+                {{status_display_items}, nullptr}),
     WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
 
 const char *const RPCPlugin::defaults[] = {
@@ -62,7 +62,7 @@ const char *const RPCPlugin::defaults[] = {
     "fetch_covers", "FALSE",
 #endif
     "hide_when_paused", "FALSE",
-    "status_display_type", std::to_string(static_cast<int>(discord::StatusDisplayType::Name)).c_str(),
+    "status_display_type", int_to_str(static_cast<int>(discord::StatusDisplayType::Name)),
     nullptr};
 
 const PluginPreferences RPCPlugin::prefs
