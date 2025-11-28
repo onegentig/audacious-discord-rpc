@@ -41,9 +41,12 @@ const char RPCPlugin::about[]
       "(Discord should be running before this plugin is loaded.)";
 
 static const ComboItem status_display_items[]
-    = {ComboItem(N_("Application"), static_cast<int>(discord::StatusDisplayType::Name)),
-       ComboItem(N_("Track title"), static_cast<int>(discord::StatusDisplayType::Details)),
-       ComboItem(N_("Track artist"), static_cast<int>(discord::StatusDisplayType::State))};
+    = {ComboItem(N_("Music player"),
+                 static_cast<int>(discord::StatusDisplayType::Name)),
+       ComboItem(N_("Song title"),
+                 static_cast<int>(discord::StatusDisplayType::Details)),
+       ComboItem(N_("Artist name"),
+                 static_cast<int>(discord::StatusDisplayType::State))};
 
 const PreferencesWidget RPCPlugin::widgets[] = {
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
@@ -52,17 +55,20 @@ const PreferencesWidget RPCPlugin::widgets[] = {
 #endif
     WidgetCheck(N_("Hide presence when paused"),
                 WidgetBool(PLUGIN_ID, "hide_when_paused")),
-    WidgetCombo(N_("Status display:"),
+    WidgetCombo(N_("Status display"),
                 WidgetInt(PLUGIN_ID, "status_display_type"),
                 {{status_display_items}, nullptr}),
     WidgetButton(N_("Show on GitHub"), {open_github, nullptr})};
 
 const char *const RPCPlugin::defaults[] = {
 #if (!(defined(DISABLE_RPC_CAF)) && !(DISABLE_RPC_CAF))
-    "fetch_covers", "FALSE",
+    "fetch_covers",
+    "FALSE",
 #endif
-    "hide_when_paused", "FALSE",
-    "status_display_type", int_to_str(static_cast<int>(discord::StatusDisplayType::Name)),
+    "hide_when_paused",
+    "FALSE",
+    "status_display_type",
+    int_to_str(static_cast<int>(discord::StatusDisplayType::Name)),
     nullptr};
 
 const PluginPreferences RPCPlugin::prefs
@@ -159,7 +165,8 @@ void playback_to_presence() {
 
      presence.setLargeImageKey("logo")
          .setActivityType(discord::ActivityType::Listening)
-         .setStatusDisplayType(static_cast<discord::StatusDisplayType>(status_display_type))
+         .setStatusDisplayType(
+             static_cast<discord::StatusDisplayType>(status_display_type))
          .setDetails((const char *)title)
          .setState((const char *)artist)
          .setLargeImageText(has_album ? (const char *)album : "")
