@@ -12,8 +12,9 @@
 
 #pragma once
 
-#include <WinHttp.h>
-#include <Windows.h>
+#include <windows.h>
+
+#include <winhttp.h>
 
 #include <codecvt>
 #include <optional>
@@ -80,8 +81,8 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      /** @cite
       * https://learn.microsoft.com/en-us/windows/win32/api/winhttp/nf-winhttp-winhttpcrackurl#examples
       */
-     URL_COMPONENTS url_parts{0};
-     memset(&url_parts, 0, sizeof(url_parts));
+     URL_COMPONENTS url_parts;
+     ZeroMemory(&url_parts, sizeof(url_parts));
      url_parts.dwStructSize = sizeof(url_parts);
      url_parts.dwSchemeLength = -1;
      url_parts.dwHostNameLength = -1;

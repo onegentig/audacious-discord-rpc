@@ -33,7 +33,7 @@ constexpr unsigned long FETCH_TIMEO = 15000;  // [ms]
 
 /** @brief Write callback for cURL */
 static size_t write_cb(void* c, size_t s, size_t n, void* u) {
-     ((std::string*)u)->append((char*)c, s * n);
+     static_cast<std::string*>(u)->append(static_cast<char*>(c), s * n);
      return s * n;
 }
 

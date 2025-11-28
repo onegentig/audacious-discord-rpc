@@ -2,7 +2,7 @@
  * @file covers.hpp
  * @brief Cover art fetching functionality for Audacious Discord RPC.
  * @author onegen <onegen@onegen.dev>
- * @date 2025-11-24 (last modified)
+ * @date 2025-11-27 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2025 onegen
@@ -15,10 +15,8 @@
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
-#include <cinttypes>
 #include <optional>
 #include <string>
-#include <unordered_map>
 
 #include "covers-cache.hpp"
 

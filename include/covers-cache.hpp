@@ -1,8 +1,8 @@
 /**
  * @file cover-cache.hpp
  * @brief Cache for album cover arts for Audacious Discord RPC (experimental)
- * @author Нурлан Кърамызов <onegen@onegen.dev>
- * @date 2025-11-14 (last modified)
+ * @author onegen <onegen@onegen.dev>
+ * @date 2025-11-27 (last modified)
  *
  * @note Custom solution for minimalism and not having to tackle with deps.
  *       Uses LRU eviction policy + no admission policy.
@@ -13,10 +13,8 @@
  */
 
 #pragma once
+
 #include <chrono>
-#include <cinttypes>
-#include <cstddef>
-#include <deque>
 #include <list>
 #include <optional>
 #include <string>
@@ -168,8 +166,7 @@ class CoverArtCache {
      }
 
      CacheOptions opts;  //< Cache settings, like capacity and TTL.
-     std::unordered_map<std::string, CacheEntry>
-         cachemap;                    // TODO: remove when LRU impl.
+     std::unordered_map<std::string, CacheEntry> cachemap;
      std::list<std::string> uselist;  //< List of keys ordered by use recency.
      std::size_t bytes_used = 0;      //< Size of cache in bytes.
 };

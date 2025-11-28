@@ -4,10 +4,10 @@
  * @version 2.2
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-11-26 (last modified)
+ * @date 2025-11-28 (last modified)
  *
  * @license MIT
- * @copyright Copyright (c) 2024      onegen
+ * @copyright Copyright (c) 2024–2025 onegen
  *                          2018–2022 Derzsi Dániel
  *
  */
@@ -84,36 +84,33 @@ static discord::Presence presence;
 void init_discord() {
      rpc.setClientID(DISCORD_APP_ID).initialize();
      rpc.onReady([](const discord::User &) {
-             is_connected = true;
+             is_connected.store(true);
              AUDINFO("Discord RPC Connected.\r\n");
         })
          .onDisconnected([](int, std::string_view) {
-              is_connected = false;
+              is_connected.store(false);
               AUDINFO("Discord RPC Disconnected.\r\n");
          })
          .onErrored([](int, std::string_view msg) {
-              std::string err = "Discord RPC Error: ";
-              err += msg;
-              AUDERR("%s\r\n", err.c_str());
+              AUDERR("Discord RPC Error: %s\r\n", msg.data());
          });
 }
 
 void clear_discord() {
-     if (!is_connected) return;
+     if (!is_connected.load()) return;
+     presence = discord::Presence{};  // Full reset
+     presence.setLargeImageKey("logo").setLargeImageText("Audacious");
      rpc.clearPresence();
 }
 
 void cleanup_discord() {
-     if (!is_connected) return;
+     if (!is_connected.load()) return;
      rpc.clearPresence();
      rpc.shutdown();
 }
 
 void update_presence() {
-     if (!is_connected) return;
-     rpc.clearPresence()
-         .refresh();  // TODO: Timestamps are very unreliably cleared.
-                      // This helps a little, but it’s still very wonky.
+     if (!is_connected.load()) return;
      rpc.setPresence(presence).refresh();
 }
 
@@ -126,7 +123,7 @@ void init_presence() {
 /* === Audacious playback -> Discord RPC (main function) === */
 
 void playback_to_presence() {
-     if (!is_connected) return;
+     if (!is_connected.load()) return;
      if (!aud_drct_get_playing() || !aud_drct_get_ready()) {
           clear_discord();
           return;
@@ -198,29 +195,29 @@ void playback_to_presence() {
 
           // Cover fetching still works on std::strings
           AUDINFO("RPC main: starting cover art fetch (CAF) thread...\r\n");
-          cover_to_presence(has_album_artist ? (const char *)album_artist
-                                             : (const char *)artist,
-                            (const char *)album);
+          cover_to_presence(has_album_artist ? album_artist : artist, album);
      }
 }
 
 /* == Attempt to fetch cover art, if enabled */
 
-void cover_to_presence(const std::string &artist, const std::string &album) {
+void cover_to_presence(const String &artist, const String &album) {
 #if (defined(DISABLE_RPC_CAF) && DISABLE_RPC_CAF)
      return;
 #else
-     const auto req_id = ++req_id_last;
-     cover_fetch_running.store(true);
-     std::thread([artist, album, req_id] {
-          auto thread_req_id = req_id;
-          if (thread_req_id != req_id_last.load()) return;
-          if (auto u
-              = cover_lookup(artist, album, &req_id_last, thread_req_id)) {
-               if (thread_req_id == req_id_last.load()) {
-                    presence.setLargeImageKey(*u);
-                    update_presence();
-               }
+     unsigned long long req_id = ++req_id_now;
+     std::thread([req_id, artist, album] {
+          if (req_id != req_id_now.load(std::memory_order_relaxed)) return;
+          auto url = cover_lookup((const char *)artist, (const char *)album,
+                                  &req_id_now, req_id);
+          if (url && !url->empty()
+              && req_id == req_id_now.load(std::memory_order_relaxed)) {
+               presence.setLargeImageKey(*url);
+               update_presence();
+               AUDINFO("RPC CAF: Applied cover (req %llu)\r\n", req_id);
+          } else {
+               AUDINFO("RPC CAF: Aborted cover fetch (stale req %llu)\r\n",
+                       req_id);
           }
      }).detach();
 #endif
