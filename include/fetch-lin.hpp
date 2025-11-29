@@ -45,7 +45,6 @@ static const char* ua
       "(+https://github.com/onegen-dev/audacious-discord-rpc)";
 
 static std::optional<std::string> fetch(const std::string& url) noexcept {
-     AUDDBG("RPC CAF: fetching %s\r\n", url.c_str());
      CURL* c = curl_easy_init();
      if (!c) return std::nullopt;
      std::string buf;
@@ -65,7 +64,7 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      CURLcode r = curl_easy_perform(c);
      curl_easy_cleanup(c);
      if (r != CURLE_OK) {
-          AUDERR("RPC CAF: cURL err %d\r\n", r);
+          AUDINFO("Discord RPC cURL fetch failed, err = %d\r\n", r);
           return std::nullopt;
      }
 

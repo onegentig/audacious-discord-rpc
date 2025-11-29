@@ -17,6 +17,7 @@
 
 #include <optional>
 #include <string>
+#include <thread>
 
 #include "covers-cache.hpp"
 
@@ -65,10 +66,10 @@ std::optional<std::string> cover_lookup(
      // Cache
      auto cache_res = cache.get(artist, album);
      if (cache_res.has_value()) {
-          AUDINFO("RPC CAF: Cache hit!\r\n");
+          AUDINFO("Discord RPC: Cover art cache hit!\r\n");
           return cache_res;
      } else {
-          AUDINFO("RPC CAF: Cache miss.\r\n");
+          AUDDBG("Discord RPC: Cover art cache miss, continuing...\r\n");
      }
 
      unsigned int tries = 0;
@@ -110,38 +111,42 @@ std::optional<std::string> cover_lookup(
           if (is_cancelled(active_req_id, this_req_id)) return std::nullopt;
           auto mb_json = fetch(req);
           if (!mb_json) {
-               AUDERR("RPC CAF: MB error!\r\n");
+               AUDINFO(
+                   "Discord RPC: MusicBrainz sent a bad reply (task %llu)\r\n",
+                   this_req_id);
                continue;
           }
 
           auto mb = json::parse(*mb_json, nullptr, false);
           if (mb.is_discarded() || !mb.is_object() || mb["count"] == 0
               || mb["releases"].empty()) {
-               AUDERR("RPC CAF: MB no releases found!\r\n");
+               AUDINFO(
+                   "Discord RPC: MusicBrainz found no releases (task %llu)\r\n",
+                   this_req_id);
                return std::nullopt;
           }
           auto release = mb["releases"][0];
           if (release["score"] < 90)
                return std::nullopt;  // No good-enough match
           std::string mbid = release["id"];
-          AUDINFO("RPC CAF: found MBID %s \r\n", mbid.c_str());
+          AUDINFO("Discord RPC: MusicBrainz found release %s (task %llu)\r\n",
+                  mbid.c_str(), this_req_id);
 
           // CAA (fetch all artwork)
           if (is_cancelled(active_req_id, this_req_id)) return std::nullopt;
           auto caa_json = fetch("https://coverartarchive.org/release/" + mbid);
           if (!caa_json) {
-               AUDERR("RPC CAF: CAA error.\r\n");
+               AUDINFO("Discord RPC: CAA sent a bad reply (task %llu)\r\n",
+                       this_req_id);
                continue;
           }
 
           // CAA (parse and find front cover)
           auto caa = json::parse(*caa_json, nullptr, false);
           if (caa.is_discarded() || !caa.is_object() || caa["images"].empty()) {
-               AUDERR("RPC CAF: CAA no images for release found!\r\n");
+               AUDINFO("Discord RPC: CAA found no images (task %llu)\r\n",
+                       this_req_id);
                return std::nullopt;
-          } else {
-               AUDINFO("RPC CAF: CAA found %zu images\r\n",
-                       caa["images"].size());
           }
 
           for (auto& image : caa["images"]) {
@@ -150,16 +155,21 @@ std::optional<std::string> cover_lookup(
                    && image["thumbnails"].contains("large")) {
                     std::string image_url = image["thumbnails"]["large"];
                     cache.put(artist, album, image_url);
-                    AUDINFO("RPC CAF: returning found img!\r\n");
+                    AUDINFO(
+                        "Discord RPC: CAA found a front image (task %llu)\r\n",
+                        this_req_id);
                     return image_url;
                }
           }
 
-          AUDERR("RPC CAF: no front image!\r\n");
+          AUDINFO("Discord RPC: CAA found no front images (task %llu)\r\n",
+                  this_req_id);
           return std::nullopt;
 
      } while (++tries < FETCH_MAX_RETRIES);
 
-     AUDERR("RPC CAF: max retries reached!\r\n");
+     AUDINFO(
+         "Discord RPC: Cover art fetch failed after %u retries (task %llu)\r\n",
+         FETCH_MAX_RETRIES, this_req_id);
      return std::nullopt;
 }

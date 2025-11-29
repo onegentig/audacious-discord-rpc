@@ -4,7 +4,7 @@
  * @version 2.2
  * @author onegen <onegen@onegen.dev>
  * @author Derzsi Dániel <daniel@tohka.us>
- * @date 2025-11-28 (last modified)
+ * @date 2025-11-29 (last modified)
  *
  * @license MIT
  * @copyright Copyright (c) 2024–2025 onegen
@@ -135,7 +135,7 @@ void playback_to_presence() {
           return;
      }
 
-     AUDDBG("RPC main: updating presence...\r\n");
+     AUDDBG("Discord RPC: playback_to_presence called\r\n");
      const Tuple tuple = aud_drct_get_tuple();
      String title = tuple.get_str(Tuple::Title);
      String artist = tuple.get_str(Tuple::Artist);
@@ -145,9 +145,7 @@ void playback_to_presence() {
           title = tuple.get_str(Tuple::Basename);
           if (audstr_empty(title)) {
                // Give up
-               AUDINFO(
-                   "RPC main: no title or filename found, clearing "
-                   "presence.\r\n");
+               AUDINFO("Discord RPC: No title or filename, giving up.\r\n");
                clear_discord();
                return;
           }
@@ -194,14 +192,14 @@ void playback_to_presence() {
           presence.setStartTimestamp(0).setEndTimestamp(0);
      }
 
-     AUDINFO("RPC main: updated presence!\r\n");
      update_presence();
+     AUDINFO("Discord RPC: playback_to_presence successfully updated RPC!\r\n");
 
      if (has_album && aud_get_bool(PLUGIN_ID, "fetch_covers")) {
           String album_artist = tuple.get_str(Tuple::AlbumArtist);
           bool has_album_artist = !audstr_empty(album_artist);
 
-          AUDINFO("RPC main: starting cover art fetch (CAF) thread...\r\n");
+          AUDINFO("Discord RPC: Starting a cover art fetching task\r\n");
           cover_to_presence(has_album_artist ? album_artist : artist, album);
      }
 }
@@ -221,9 +219,10 @@ void cover_to_presence(const String &artist, const String &album) {
               && req_id == req_id_now.load(std::memory_order_relaxed)) {
                presence.setLargeImageKey(*url);
                update_presence();
-               AUDINFO("RPC CAF: Applied cover (req %llu)\r\n", req_id);
+               AUDINFO("Discord RPC: Cover fetch task %llu applied!\r\n",
+                       req_id);
           } else {
-               AUDINFO("RPC CAF: Aborted cover fetch (stale req %llu)\r\n",
+               AUDINFO("Discord RPC: Dismissed stale fetch task %llu.\r\n",
                        req_id);
           }
      }).detach();

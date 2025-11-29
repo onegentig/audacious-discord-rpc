@@ -84,7 +84,9 @@ class CoverArtCache {
               const std::string& val) {
           std::string k = key(artist, album);
           if ((2 * k.size()) + val.size() + TIMESTAMP_SIZE > opts.max_bytes) {
-               AUDERR("RPC CACache: Entry too big!\r\n");
+               AUDDBG(
+                   "Discord RPC: put() of an entry bigger than cache size "
+                   "attempted!\r\n");
                return;
           }
 
@@ -100,7 +102,6 @@ class CoverArtCache {
                if (list_it != uselist.end()) uselist.erase(list_it);
 
                uselist.push_front(k);
-               AUDDBG("RPC CACache: Updated URL of an entry\r\n");
           } else {
                // New key => insert
                cachemap.emplace(k, CacheEntry{val, clk::now()});
@@ -108,8 +109,6 @@ class CoverArtCache {
                bytes_used
                    += k.size() + TIMESTAMP_SIZE;  // + key & timestamp sizes
                bytes_used += val.size();          // + new val size
-               AUDDBG("RPC CACache: Added new entry %s (%zu items; %zu B)\r\n",
-                      k.c_str(), uselist.size(), bytes_used);
           }
 
           enforce();
@@ -119,7 +118,6 @@ class CoverArtCache {
           cachemap.clear();
           uselist.clear();
           bytes_used = 0;
-          AUDINFO("RPC CACache: Cleared (0 items; 0 B)\r\n");
      }
 
    private:
@@ -134,8 +132,6 @@ class CoverArtCache {
           bytes_used -= it->second.val.size() + k.size() + TIMESTAMP_SIZE;
           uselist.remove(k);
           cachemap.erase(it);
-          AUDDBG("RPC CACache: Dropped LRU entry %s (%zu items; %zu B)\r\n",
-                 k.c_str(), uselist.size(), bytes_used);
      }
 
      bool is_overflowing() const {
@@ -149,13 +145,11 @@ class CoverArtCache {
 
      void enforce() {
           if (cachemap.size() != uselist.size())
-               AUDERR(
-                   "RPC CACache: Cachemap size (%zu) and uselist size (%zu) "
-                   "are not equal!\r\n",
+               AUDINFO(
+                   "Discord RPC: Cache sanity check failed! Cachemap size "
+                   "(%zu) is not equal to uselist size (%zu)!\r\n",
                    cachemap.size(),
                    uselist.size());  // Just a sanity check, should NEVER happen
-          AUDDBG("RPC CACache: enforce() on B=%zu Bmax=%zu N=%zu Nmax=%zu\r\n",
-                 bytes_used, opts.max_bytes, uselist.size(), opts.max_items);
 
           while (this->is_overflowing()) {
                // Evict the least frequently used item (LRU)

@@ -75,7 +75,6 @@ static const wchar_t* ua
       "(+https://github.com/onegen-dev/audacious-discord-rpc)";
 
 static std::optional<std::string> fetch(const std::string& url) noexcept {
-     AUDDBG("RPC CAF: fetching %s\r\n", url.c_str());
      std::wstring wurl = wstringify(url);
 
      /** @cite
@@ -89,8 +88,8 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      url_parts.dwUrlPathLength = -1;
      url_parts.dwExtraInfoLength = -1;
      if (!WinHttpCrackUrl(wurl.c_str(), 0, 0, &url_parts)) {
-          AUDERR("RPC CAF: WinHTTP CrackURL err %s\r\n",
-                 GetLastErrorAsString().c_str());
+          AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                  GetLastErrorAsString().c_str());
           return std::nullopt;
      }
 
@@ -116,12 +115,10 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      };
 
      if (!req) {
-          AUDERR("RPC CAF: WinHTTP OpenRequest err %s\r\n",
-                 GetLastErrorAsString().c_str());
+          AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                  GetLastErrorAsString().c_str());
           cleanup();
           return std::nullopt;
-     } else {
-          AUDINFO("RPC CAF: WinHTTP OpenRequest succeeded\r\n");
      }
 
      bool res = WinHttpSetTimeouts(req, FETCH_TIMEO, FETCH_TIMEO, FETCH_TIMEO,
@@ -129,8 +126,8 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      if (res) res |= WinHttpSendRequest(req, NULL, 0, NULL, 0, 0, 0);
      if (res) res |= WinHttpReceiveResponse(req, NULL);
      if (!res) {
-          AUDERR("RPC CAF: WinHTTP SendRequest err %s\r\n",
-                 GetLastErrorAsString().c_str());
+          AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                  GetLastErrorAsString().c_str());
           cleanup();
           return std::nullopt;
      }
@@ -140,10 +137,9 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
      unsigned long n_available = 0;
 
      do {
-          AUDINFO("RPC CAF: Looping");
           if (!WinHttpQueryDataAvailable(req, &n_available)) {
-               AUDERR("RPC CAF: WinHTTP QueryData err %s\r\n",
-                      GetLastErrorAsString().c_str());
+               AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                       GetLastErrorAsString().c_str());
                cleanup();
                return std::nullopt;
           }
@@ -151,15 +147,15 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
           if (!n_available) break;
           char* buf = new char[n_available];
           if (!buf) {
-               AUDERR(
-                   "RPC CAF: WinHTTP ReadData buffer init fail (OutOfMemory)");
+               AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                       GetLastErrorAsString().c_str());
                cleanup();
                return std::nullopt;
           }
 
           if (!WinHttpReadData(req, buf, n_available, &n_read)) {
-               AUDERR("RPC CAF: WinHTTP ReadData err %s\r\n",
-                      GetLastErrorAsString().c_str());
+               AUDINFO("Discord RPC WinHTTP fetch failed: %s\r\n",
+                       GetLastErrorAsString().c_str());
                cleanup();
                delete[] buf;
                return std::nullopt;
@@ -168,11 +164,10 @@ static std::optional<std::string> fetch(const std::string& url) noexcept {
           data.append(buf, n_read);
           delete[] buf;
 
-          if (n_read == 0) break;  // Shouldnt happen
+          if (n_read == 0) break;  // Shouldn’t happen
      } while (n_available > 0);
      cleanup();
 
-     AUDINFO("WinHTTP Result: %s", data.c_str());
      return data;
 }
 
