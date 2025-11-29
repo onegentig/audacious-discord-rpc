@@ -140,10 +140,10 @@ void playback_to_presence() {
      String title = tuple.get_str(Tuple::Title);
      String artist = tuple.get_str(Tuple::Artist);
      String album = tuple.get_str(Tuple::Album);
-     if (!title) {
+     if (audstr_empty(title)) {
           // Fallback to filename
           title = tuple.get_str(Tuple::Basename);
-          if (!title) {
+          if (audstr_empty(title)) {
                // Give up
                AUDINFO(
                    "RPC main: no title or filename found, clearing "
@@ -155,8 +155,8 @@ void playback_to_presence() {
 
      title = field_sanitise(title);
      artist = field_sanitise(artist);
-     bool has_album = !!album;
-     album = has_album ? field_sanitise(album) : album;
+     bool has_album = !audstr_empty(album);
+     album = has_album ? field_sanitise(album) : String("");
 
      int status_display_type = aud_get_int(PLUGIN_ID, "status_display_type");
 
@@ -166,22 +166,30 @@ void playback_to_presence() {
              static_cast<discord::StatusDisplayType>(status_display_type))
          .setDetails((const char *)title)
          .setState((const char *)artist)
-         .setLargeImageText(has_album ? (const char *)album : "")
+         .setLargeImageText((const char *)album)
          .setSmallImageKey(playing ? "play" : "pause")
          .setSmallImageText("Audacious");
 
-     if (playing) {
-          const auto clock = std::chrono::system_clock::now();
-          const int64_t now_ts
-              = std::chrono::duration_cast<std::chrono::seconds>(
-                    clock.time_since_epoch())
-                    .count();
-          int64_t start_ts = now_ts - (aud_drct_get_time() / 1000);
-          presence.setStartTimestamp(start_ts);
-          if (tuple.get_value_type(Tuple::Length) == Tuple::Int
-              && tuple.get_int(Tuple::Length) > 0)
+     if (playing && tuple.get_value_type(Tuple::Length) == Tuple::Int) {
+          const auto now = std::chrono::system_clock::now();
+          const auto start_time
+              = now - std::chrono::seconds(aud_drct_get_time() / 1000);
+          presence.setStartTimestamp(
+              std::chrono::duration_cast<std::chrono::seconds>(
+                  start_time.time_since_epoch())
+                  .count());
+
+          int length_s = tuple.get_int(Tuple::Length) / 1000;
+          if (length_s > 0) {
+               const auto end_time
+                   = start_time + std::chrono::seconds(length_s);
                presence.setEndTimestamp(
-                   start_ts + (tuple.get_int(Tuple::Length) / 1000));
+                   std::chrono::duration_cast<std::chrono::seconds>(
+                       end_time.time_since_epoch())
+                       .count());
+          } else {
+               presence.setEndTimestamp(0);
+          }
      } else {
           presence.setStartTimestamp(0).setEndTimestamp(0);
      }
@@ -193,7 +201,6 @@ void playback_to_presence() {
           String album_artist = tuple.get_str(Tuple::AlbumArtist);
           bool has_album_artist = !audstr_empty(album_artist);
 
-          // Cover fetching still works on std::strings
           AUDINFO("RPC main: starting cover art fetch (CAF) thread...\r\n");
           cover_to_presence(has_album_artist ? album_artist : artist, album);
      }
